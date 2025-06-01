@@ -17,6 +17,5 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_COMPILER_WARNING_AS_ERROR ON)
 
 find_package(CLI11 REQUIRED)
-#find_package(ncurses REQUIRED)
 
 add_subdirectory(src)

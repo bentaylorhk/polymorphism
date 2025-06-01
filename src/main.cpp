@@ -62,14 +62,21 @@ int main(int argc, char *argv[]) {
         "Polyphonic RSVP: A collection of ASCII art animations made for the "
         "event 'Polyphonic RSVP'."};
 
-    std::string logoFilePath;
+    std::string logoFilePath =
+        "/home/ben/repos/polyphonic-rsvp/ascii-art/POLYPHONIC_DOLLAR.txt";
     app.add_option("--logo", logoFilePath, "Path to the ASCII logo file")
-        ->required()
+        ->default_val(logoFilePath)
         ->check(CLI::ExistingFile);
 
     std::string animationName;
     app.add_option("--animation", animationName,
                    "Play a specific animation by name");
+
+    std::string sourceDir = "/home/ben/repos/polyphonic-rsvp/src";
+    app.add_option("--source-dir", sourceDir,
+                   "The source directory for the project files")
+        ->default_val(sourceDir)
+        ->check(CLI::ExistingDirectory);
 
     CLI11_PARSE(app, argc, argv);
 
@@ -93,7 +100,7 @@ int main(int argc, char *argv[]) {
     AsciiArt asciiArt = stringTo2DArray(rawArt, artWidth, artHeight);
 
     // Create animation context
-    AnimationContext context{stdscr, asciiArt};
+    AnimationContext context{stdscr, asciiArt, sourceDir};
 
     if (!animationName.empty()) {
         // Play a specific animation by name
@@ -114,6 +121,7 @@ int main(int argc, char *argv[]) {
         loop(context);
     }
 
+    curs_set(TRUE);
     endwin();
     return EXIT_SUCCESS;
 }

@@ -17,6 +17,7 @@ enum class TransitionState { Blank, Anything, Logo };
 struct AnimationContext {
     WINDOW *window;
     const AsciiArt &asciiArt;
+    const std::string &sourceDir;
     void getDimensions(int &width, int &height) const {
         getmaxyx(window, height, width);
     }
