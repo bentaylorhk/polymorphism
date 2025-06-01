@@ -16,6 +16,11 @@
 #include "animations/animations.h"
 #include "common.h"
 
+constexpr int PADDING_TOP = 1;
+constexpr int PADDING_BOTTOM = 0;
+constexpr int PADDING_LEFT = 2;
+constexpr int PADDING_RIGHT = 4;
+
 void loop(AnimationContext &context) {
     std::random_device rd;
     std::mt19937 rng(rd());
@@ -86,10 +91,10 @@ int main(int argc, char *argv[]) {
     start_color();
     use_default_colors();
 
-    init_pair(1, COLOR_MAGENTA, -1);
-    init_pair(2, COLOR_CYAN, -1);
-    init_pair(3, COLOR_GREEN, -1);
-    init_pair(4, COLOR_YELLOW, -1);
+    // TODO: Better colour scheme, neon colours but also polyphonic based.
+    init_pair(1, 175, -1);
+    init_pair(2, 34, -1);
+    init_pair(3, 172, -1);
 
     // Load ASCII art
     std::ifstream file(logoFilePath);
@@ -106,14 +111,27 @@ int main(int argc, char *argv[]) {
     getStringDimensions(rawArt, artWidth, artHeight);
     AsciiArt asciiArt = stringTo2DArray(rawArt, artWidth, artHeight);
 
+    // Creating a padded window to suit overscanned CRT
+    int max_y, max_x;
+    getmaxyx(stdscr, max_y, max_x);
+
+    // Calculate dimensions for the subwindow
+    int win_height = max_y - PADDING_TOP - PADDING_BOTTOM;
+    int win_width = max_x - PADDING_LEFT - PADDING_RIGHT;
+
+    // Create the subwindow with position and size
+    WINDOW *subwindow =
+        newwin(win_height, win_width, PADDING_TOP, PADDING_LEFT);
+
     // Create animation context
-    AnimationContext context{stdscr, asciiArt, sourceDir};
+    AnimationContext context{subwindow, asciiArt, sourceDir};
 
     if (!animationName.empty()) {
         // Play a specific animation by name
         std::shared_ptr<Animation> animation =
             findAnimationByName(animationName);
         if (!animation) {
+            delwin(subwindow);
             endwin();
             std::cerr << "Error: Animation '" << animationName
                       << "' not found. Available animations are:";
@@ -129,6 +147,7 @@ int main(int argc, char *argv[]) {
     }
 
     curs_set(TRUE);
+    delwin(subwindow);
     endwin();
     return EXIT_SUCCESS;
 }

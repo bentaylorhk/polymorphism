@@ -4,6 +4,7 @@
  */
 
 // TODO: Fix the input context window such that it's cropped to the screen size.
+// TODO: Maybe prioritise better files, like this code_scroll and the main file
 
 #include "code_scroll.h"
 
@@ -76,7 +77,7 @@ void CodeScroll::run(const AnimationContext& context) {
         }
 
         wrefresh(context.window);
-        std::this_thread::sleep_for(std::chrono::milliseconds(83));
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
     };
 
     for (const auto& file : files) {
