@@ -6,7 +6,7 @@
 #pragma once
 #include "animation.h"
 
-static constexpr int MAX_CURVES = 3;
+constexpr int MAX_CURVES = 3;
 
 class Lissajous : public Animation {
    public:
@@ -20,5 +20,5 @@ class Lissajous : public Animation {
     }
 
    private:
-    std::vector<char> chars = {'o', '*', '+', 'x', '#', '@', '&'};
+    std::vector<char> intensityChars = {'.', 'o', 'x', '*', '#', 'X', '$', '@'};
 };
