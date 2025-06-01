@@ -1,0 +1,19 @@
+﻿# Benjamin Michael Taylor (bentaylorhk)
+# 2023
+
+BasedOnStyle: Google
+TabWidth: 4
+IndentWidth: 4
+UseTab: Never
+ColumnLimit: 80
+
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLambdasOnASingleLine: None
+AllowShortLoopsOnASingleLine: false
+Cpp11BracedListStyle: true
+PointerAlignment: Right
+SpaceBeforeCtorInitializerColon: true
