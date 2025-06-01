@@ -5,6 +5,7 @@
 
 #include "common.h"
 
+#include <algorithm>
 #include <sstream>
 
 void getStringDimensions(const std::string &input, int &width, int &height) {
@@ -50,4 +51,13 @@ double easeOutQuad(double t) {
 
 double easeInQuad(double t) {
     return t * t;
+}
+
+std::string toLower(const std::string &input) {
+    std::string result = input;
+    std::transform(result.begin(), result.end(), result.begin(),
+                   [](unsigned char c) {
+                       return std::tolower(c);
+                   });
+    return result;
 }

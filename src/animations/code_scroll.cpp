@@ -3,6 +3,8 @@
  * 2025
  */
 
+// TODO: Fix the input context window such that it's cropped to the screen size.
+
 #include "code_scroll.h"
 
 #include <chrono>
@@ -42,7 +44,37 @@ void CodeScroll::run(const AnimationContext& context) {
 
     auto scrollPrint = [&](const std::string& text) {
         scroll(context.window);
-        mvwprintw(context.window, lastLine, 0, "%s", text.c_str());
+
+        // Truncate to window width to disable wrapping
+        std::string displayText = text.substr(0, cols);
+
+        // Case-insensitive search for "polyphonic"
+        std::string lowerText = toLower(displayText);
+        std::string word = "polyphonic";
+        size_t pos = lowerText.find(word);
+
+        if (pos != std::string::npos && has_colors()) {
+            // Print up to the match
+            mvwaddnstr(context.window, lastLine, 0, displayText.c_str(), pos);
+
+            // Highlight "polyphonic"
+            wattron(context.window, COLOR_PAIR(2) | A_BOLD);
+            mvwaddnstr(context.window, lastLine, pos, displayText.c_str() + pos,
+                       word.size());
+            wattroff(context.window, COLOR_PAIR(2) | A_BOLD);
+
+            // Print the rest of the line, if any
+            int afterPos = pos + word.size();
+            if ((size_t)afterPos < displayText.size()) {
+                mvwaddnstr(context.window, lastLine, afterPos,
+                           displayText.c_str() + afterPos,
+                           displayText.size() - afterPos);
+            }
+        } else {
+            mvwaddnstr(context.window, lastLine, 0, displayText.c_str(),
+                       displayText.size());
+        }
+
         wrefresh(context.window);
         std::this_thread::sleep_for(std::chrono::milliseconds(83));
     };
@@ -61,7 +93,8 @@ void CodeScroll::run(const AnimationContext& context) {
         }
 
         // Gap between files
-        scrollPrint("\n");
+        scrollPrint("");
+        scrollPrint("");
     }
 
     scrollok(context.window, FALSE);

@@ -83,6 +83,13 @@ int main(int argc, char *argv[]) {
     initscr();
     noecho();
     curs_set(FALSE);
+    start_color();
+    use_default_colors();
+
+    init_pair(1, COLOR_MAGENTA, -1);
+    init_pair(2, COLOR_CYAN, -1);
+    init_pair(3, COLOR_GREEN, -1);
+    init_pair(4, COLOR_YELLOW, -1);
 
     // Load ASCII art
     std::ifstream file(logoFilePath);
