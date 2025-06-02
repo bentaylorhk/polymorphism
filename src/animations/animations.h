@@ -16,13 +16,13 @@
 #include "game_of_life.h"
 #include "lissajous.h"
 #include "neofetch.h"
-#include "retro_cascade.h"
 #include "shutterboard.h"
+#include "single_cascade.h"
 
 const std::vector<std::shared_ptr<Animation>> allAnimations = {
     // TODO: Ensure all animations done at end
     std::make_shared<Shutterboard>(), std::make_shared<CodeScroll>(),
-    std::make_shared<Lissajous>(),    std::make_shared<RetroCascade>(),
+    std::make_shared<Lissajous>(),    std::make_shared<SingleCascade>(),
     std::make_shared<DVD>(),          std::make_shared<GameOfLife>(),
     std::make_shared<CharFill>(),
     // TODO: Finish neofetch, could make a full one in house and display ncurses

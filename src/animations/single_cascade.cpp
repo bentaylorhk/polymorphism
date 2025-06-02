@@ -3,8 +3,6 @@
  * 2025
  */
 
-#include "retro_cascade.h"
-
 #include <ncurses.h>
 
 #include <algorithm>
@@ -12,7 +10,9 @@
 #include <random>
 #include <thread>
 
-void RetroCascade::drawFrame(const AnimationContext &context) {
+#include "single_cascade.h"
+
+void SingleCascade::drawFrame(const AnimationContext &context) {
     int polyphonicLength = polyphonic.size();
 
     int winHeight, outerWinWidth;

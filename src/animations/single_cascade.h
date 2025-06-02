@@ -4,14 +4,16 @@
  */
 
 #pragma once
+
 #include "animation.h"
 
-class RetroCascade : public Animation {
+class SingleCascade : public Animation {
    public:
-    RetroCascade() : Animation(TransitionState::Blank, TransitionState::Blank) {
+    SingleCascade()
+        : Animation(TransitionState::Blank, TransitionState::Blank) {
     }
     const char *name() const override {
-        return "retro-cascade";
+        return "single-cascade";
     }
 
    protected:
