@@ -21,6 +21,7 @@
 #include "shutterboard.h"
 #include "sine_waves.h"
 #include "single_cascade.h"
+#include "vertical_wipe.h"
 
 const std::vector<std::shared_ptr<Animation>> allAnimations = {
     // TODO: Ensure all animations done at end
@@ -29,6 +30,7 @@ const std::vector<std::shared_ptr<Animation>> allAnimations = {
     std::make_shared<DVD>(),          std::make_shared<GameOfLife>(),
     std::make_shared<CharFill>(),     std::make_shared<DiagonalFillWipe>(),
     std::make_shared<SineWaves>(),    std::make_shared<FuzzOut>(),
+    std::make_shared<VerticalWipe>(),
     // TODO: Finish neofetch, could make a full one in house and display ncurses
     // colours used.
     // std::make_shared<Neofetch>(),
