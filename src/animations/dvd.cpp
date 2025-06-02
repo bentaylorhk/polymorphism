@@ -52,9 +52,9 @@ void DVD::drawFrame(const AnimationContext &context) {
             int ty = trail[t].second;
 
             // TODO: Better colours, maybe even fade the trail out
-            wattron(paddedWindow, COLOR_PAIR(t));
+            wattron(paddedWindow, COLOR_PAIR(t) | A_BOLD);
             mvwprintw(paddedWindow, ty, tx, "%s", polyphonic.c_str());
-            wattroff(paddedWindow, COLOR_PAIR(t));
+            wattroff(paddedWindow, COLOR_PAIR(t) | A_BOLD);
         }
         wrefresh(paddedWindow);
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_TIME / 4));
