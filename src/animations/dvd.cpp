@@ -41,47 +41,69 @@ void DVD::drawFrame(const AnimationContext &context) {
         dy = -dy;
     }
 
-    Gradient gradient = getRandomGradient(context.rng);
-
+    struct Poly {
+        int x, y, dx, dy;
+        Gradient gradient;
+        std::deque<std::pair<int, int>> trail;
+    };
     int trailLength = GRADIENT_LENGTH;
-    std::deque<std::pair<int, int>> trail;
-    trail.push_back({x, y});
+    int numPolys = 3;
+    std::vector<Poly> polys;
+    std::uniform_int_distribution<int> xDist(5, winWidth - wordLen - 5);
+    std::uniform_int_distribution<int> yDist(5, winHeight - 1 - 5);
+    std::vector<Gradient> gradients =
+        getNUniqueGradients(context.rng, numPolys);
+    for (int i = 0; i < numPolys; ++i) {
+        Poly p;
+        p.x = xDist(context.rng);
+        p.y = yDist(context.rng);
+        p.dx = dist(context.rng) ? 1 : -1;
+        p.dy = dist(context.rng) ? 1 : -1;
+        p.gradient = gradients[i];
+        p.trail.push_back({p.x, p.y});
+        polys.push_back(p);
+    }
+
+    int polyStartDelays[] = {0, 20, 40};
+
     for (int i = 0; i < steps; ++i) {
         werase(paddedWindow);
-        // Draw trail from oldest to newest, so newest is on top
-        for (size_t t = 0; t < trail.size(); ++t) {
-            int tx = trail[t].first;
-            int ty = trail[t].second;
-
-            int colourIndex = getColourIndex(gradient, t);
-
-            wattron(paddedWindow, COLOR_PAIR(colourIndex) | A_BOLD);
-            mvwprintw(paddedWindow, ty, tx, "%s", polyphonic.c_str());
-            wattroff(paddedWindow, COLOR_PAIR(colourIndex) | A_BOLD);
+        for (int pidx = 0; pidx < numPolys; ++pidx) {
+            if (i < polyStartDelays[pidx])
+                continue;
+            Poly &p = polys[pidx];
+            for (size_t t = 0; t < p.trail.size(); ++t) {
+                int tx = p.trail[t].first;
+                int ty = p.trail[t].second;
+                int colourIndex = getColourIndex(p.gradient, t);
+                wattron(paddedWindow, COLOR_PAIR(colourIndex) | A_BOLD);
+                mvwprintw(paddedWindow, ty, tx, "%s", polyphonic.c_str());
+                wattroff(paddedWindow, COLOR_PAIR(colourIndex) | A_BOLD);
+            }
         }
         wrefresh(paddedWindow);
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_TIME / 4));
-
-        // Get new position of front word
-        x += dx;
-        y += dy;
-        if (x <= 0 || x + wordLen >= winWidth)
-            dx = -dx;
-        if (y <= 0 || y >= winHeight - 1)
-            dy = -dy;
-        // Clamp to bounds
-        if (x < 0)
-            x = 0;
-        if (x + wordLen > winWidth)
-            x = winWidth - wordLen;
-        if (y < 0)
-            y = 0;
-        if (y >= winHeight)
-            y = winHeight - 1;
-
-        trail.push_back({x, y});
-        if ((int)trail.size() > trailLength) {
-            trail.pop_front();
+        for (int pidx = 0; pidx < numPolys; ++pidx) {
+            if (i < polyStartDelays[pidx])
+                continue;
+            Poly &p = polys[pidx];
+            p.x += p.dx;
+            p.y += p.dy;
+            if (p.x <= 0 || p.x + wordLen >= winWidth)
+                p.dx = -p.dx;
+            if (p.y <= 0 || p.y >= winHeight - 1)
+                p.dy = -p.dy;
+            if (p.x < 0)
+                p.x = 0;
+            if (p.x + wordLen > winWidth)
+                p.x = winWidth - wordLen;
+            if (p.y < 0)
+                p.y = 0;
+            if (p.y >= winHeight)
+                p.y = winHeight - 1;
+            p.trail.push_back({p.x, p.y});
+            if ((int)p.trail.size() > trailLength)
+                p.trail.pop_front();
         }
     }
 
