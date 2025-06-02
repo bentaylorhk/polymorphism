@@ -39,11 +39,14 @@ void SineWaves::drawFrame(const AnimationContext &context) {
 
     // Intro: animate '@' moving right to left across mid_row
     for (int x = cols - 1; x >= 0; --x) {
-        mvwaddch(context.window, mid_row, x, '@');
+        mvwaddch(context.window, mid_row, x, '.');
         wrefresh(context.window);
         std::this_thread::sleep_for(std::chrono::milliseconds(LINE_WAIT_TIME));
     }
     std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    // Center the wave on the middle of the mid_row cell
+    double mid_y = mid_row + 0.5;
 
     // Sine wave animation
     for (int frame = 0; frame < frames; ++frame) {
@@ -81,7 +84,7 @@ void SineWaves::drawFrame(const AnimationContext &context) {
                                                   phase2_rand);
                 // Combine the two
                 double y = y1 + y2;
-                double fy = mid_row + y;
+                double fy = mid_y + y;
                 int draw_y = static_cast<int>(fy);
                 if (draw_y >= 0 && draw_y < rows) {
                     double dist = std::abs(fy - draw_y);
@@ -110,13 +113,13 @@ void SineWaves::drawFrame(const AnimationContext &context) {
     // Instantly draw the '@' character across the middle row
     werase(context.window);
     for (int x = 0; x < cols; ++x) {
-        mvwaddch(context.window, mid_row, x, '@');
+        mvwaddch(context.window, mid_row, x, '.');
     }
     wrefresh(context.window);
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    for (int x = 0; x < cols; ++x) {
+    for (int x = cols - 1; x >= 0; --x) {
         mvwaddch(context.window, mid_row, x, ' ');
         wrefresh(context.window);
         std::this_thread::sleep_for(std::chrono::milliseconds(LINE_WAIT_TIME));
