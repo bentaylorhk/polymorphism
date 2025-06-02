@@ -26,3 +26,6 @@ double easeOutQuad(double t);
 double easeInQuad(double t);
 
 std::string toLower(const std::string &input);
+
+const std::vector<char> intensityChars = {'.', 'o', 'x', '*',
+                                          '#', 'X', '$', '@'};

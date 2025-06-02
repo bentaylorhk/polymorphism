@@ -19,7 +19,4 @@ class Lissajous : public Animation {
 
    protected:
     void drawFrame(const AnimationContext& context) override;
-
-   private:
-    std::vector<char> intensityChars = {'.', 'o', 'x', '*', '#', 'X', '$', '@'};
 };
