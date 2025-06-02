@@ -13,7 +13,7 @@
 #include <random>
 #include <thread>
 
-void Lissajous::run(const AnimationContext& context) {
+void Lissajous::drawFrame(const AnimationContext& context) {
     wclear(context.window);
 
     std::random_device rd;

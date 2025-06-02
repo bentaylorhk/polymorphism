@@ -10,7 +10,7 @@
 #include <random>
 #include <thread>
 
-void Shutterboard::run(const AnimationContext &context) {
+void Shutterboard::drawFrame(const AnimationContext &context) {
     int artHeight = context.asciiArt.size();
     // TODO: return an error if art height 0
     int artWidth = context.asciiArt[0].size();

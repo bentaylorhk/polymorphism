@@ -29,7 +29,7 @@ std::vector<std::string> CodeScroll::findFiles(
     return files;
 }
 
-void CodeScroll::run(const AnimationContext& context) {
+void CodeScroll::drawFrame(const AnimationContext& context) {
     scrollok(context.window, TRUE);
     wclear(context.window);
 

@@ -12,11 +12,12 @@ class CodeScroll : public Animation {
         : Animation(TransitionState::Blank, TransitionState::Anything) {
     }
 
-    void run(const AnimationContext& context) override;
-
     const char* name() const override {
         return "code-scroll";
     }
+
+   protected:
+    void drawFrame(const AnimationContext& context) override;
 
    private:
     std::vector<std::string> findFiles(const std::string& sourceDir) const;

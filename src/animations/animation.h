@@ -7,9 +7,12 @@
 
 #include <ncurses.h>
 
+#include <chrono>
 #include <string>
 
 #include "../common.h"
+
+constexpr auto MAX_ANIMATION_DURATION = std::chrono::seconds(30);
 
 // Represents the different start and end conditions for an animation
 enum class TransitionState { Blank, Anything, Logo };
@@ -30,10 +33,13 @@ class Animation {
     }
 
     virtual ~Animation() = default;
-    virtual void run(const AnimationContext &context) = 0;
+    void run(const AnimationContext &context);
 
     virtual const char *name() const = 0;
 
     const TransitionState startState;
     const TransitionState endState;
+
+   protected:
+    virtual void drawFrame(const AnimationContext &context) = 0;
 };

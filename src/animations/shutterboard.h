@@ -11,9 +11,10 @@ class Shutterboard : public Animation {
     Shutterboard() : Animation(TransitionState::Blank, TransitionState::Logo) {
     }
 
-    void run(const AnimationContext& context) override;
-
     const char* name() const override {
         return "shutterboard";
     }
+
+   protected:
+    void drawFrame(const AnimationContext& context) override;
 };

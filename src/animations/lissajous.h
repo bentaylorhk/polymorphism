@@ -13,11 +13,12 @@ class Lissajous : public Animation {
     Lissajous() : Animation(TransitionState::Blank, TransitionState::Anything) {
     }
 
-    void run(const AnimationContext& context) override;
-
     const char* name() const override {
         return "lissajous";
     }
+
+   protected:
+    void drawFrame(const AnimationContext& context) override;
 
    private:
     std::vector<char> intensityChars = {'.', 'o', 'x', '*', '#', 'X', '$', '@'};
