@@ -23,9 +23,7 @@ void Shutterboard::drawFrame(const AnimationContext &context) {
         }
     }
 
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(indices.begin(), indices.end(), g);
+    std::shuffle(indices.begin(), indices.end(), context.rng);
 
     int minDelay = 1;
     int maxDelay = 60;

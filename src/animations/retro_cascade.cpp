@@ -30,7 +30,7 @@ void RetroCascade::drawFrame(const AnimationContext &context) {
     std::vector<WINDOW *> subwins;
     int x = 0;
     for (int i = 0; i < polyphonicLength; ++i) {
-        int w = col_width;  // + (i < col_rem ? 1 : 0);
+        int w = col_width;
         subwins.push_back(derwin(paddedWindow, winHeight, w, 0, x));
         x += w;
     }
@@ -40,9 +40,7 @@ void RetroCascade::drawFrame(const AnimationContext &context) {
 
     std::vector<int> indices(polyphonicLength);
     std::iota(indices.begin(), indices.end(), 0);
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(indices.begin(), indices.end(), g);
+    std::shuffle(indices.begin(), indices.end(), context.rng);
     for (int idx : indices) {
         for (int row = 0; row < middleRow + trailLength; row++) {
             int eraseIdx = row - trailLength;
@@ -60,7 +58,7 @@ void RetroCascade::drawFrame(const AnimationContext &context) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(3500));
 
-    std::shuffle(indices.begin(), indices.end(), g);
+    std::shuffle(indices.begin(), indices.end(), context.rng);
 
     for (int idx : indices) {
         for (int row = middleRow; row < winHeight + trailLength; row++) {

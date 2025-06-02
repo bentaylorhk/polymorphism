@@ -16,8 +16,6 @@
 void Lissajous::drawFrame(const AnimationContext& context) {
     wclear(context.window);
 
-    std::random_device rd;
-    std::mt19937 gen(rd());
     std::uniform_int_distribution<int> freq_dist(1, 6);
 
     int cols, rows;
@@ -35,8 +33,8 @@ void Lissajous::drawFrame(const AnimationContext& context) {
 
     for (int curveCount = 0; curveCount < 3; curveCount++) {
         // Random frequencies for each curve
-        int a = freq_dist(gen);
-        int b = freq_dist(gen);
+        int a = freq_dist(context.rng);
+        int b = freq_dist(context.rng);
 
         // Calculate fundamental period for early stopping
         int g = std::gcd(a, b);

@@ -23,21 +23,17 @@ constexpr int PADDING_LEFT = 2;
 constexpr int PADDING_RIGHT = 4;
 
 void loop(AnimationContext &context) {
-    std::random_device rd;
-    std::mt19937 rng(rd());
-
     std::map<TransitionState, std::vector<std::shared_ptr<Animation>>>
         animationsStartMap = getAnimationsByStartState();
 
     auto randomAnimation =
-        [&rng, &animationsStartMap](
-            TransitionState startState) -> std::shared_ptr<Animation> {
+        [&](TransitionState startState) -> std::shared_ptr<Animation> {
         std::vector<std::shared_ptr<Animation>> vec =
             animationsStartMap[startState];
         if (vec.empty())
             return nullptr;
         std::uniform_int_distribution<size_t> dist(0, vec.size() - 1);
-        return vec[dist(rng)];
+        return vec[dist(context.rng)];
     };
 
     auto currentAnimation = randomAnimation(TransitionState::Blank);
