@@ -13,6 +13,7 @@
 #include "dvd.h"
 #include "game_of_life.h"
 #include "lissajous.h"
+#include "neofetch.h"
 #include "retro_cascade.h"
 #include "shutterboard.h"
 
@@ -21,6 +22,9 @@ const std::vector<std::shared_ptr<Animation>> allAnimations = {
     std::make_shared<Shutterboard>(), std::make_shared<CodeScroll>(),
     std::make_shared<Lissajous>(),    std::make_shared<RetroCascade>(),
     std::make_shared<DVD>(),          std::make_shared<GameOfLife>(),
+    // TODO: Finish neofetch, could make a full one in house and display ncurses
+    // colours used.
+    // std::make_shared<Neofetch>(),
 };
 
 std::map<TransitionState, std::vector<std::shared_ptr<Animation>>>

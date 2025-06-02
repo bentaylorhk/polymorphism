@@ -8,6 +8,7 @@
 #include <ncurses.h>
 
 #include <chrono>
+#include <random>
 #include <string>
 
 #include "../common.h"
@@ -21,6 +22,7 @@ struct AnimationContext {
     WINDOW *window;
     const AsciiArt &asciiArt;
     const std::string &sourceDir;
+    std::mt19937 &rng;
     inline void getDimensions(int &height, int &width) const {
         getmaxyx(window, height, width);
     }

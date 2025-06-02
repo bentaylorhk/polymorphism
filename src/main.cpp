@@ -15,6 +15,7 @@
 
 #include "animations/animations.h"
 #include "common.h"
+#include "util/colours.h"
 
 constexpr int PADDING_TOP = 1;
 constexpr int PADDING_BOTTOM = 0;
@@ -73,13 +74,8 @@ int main(int argc, char *argv[]) {
     initscr();
     noecho();
     curs_set(FALSE);
-    start_color();
-    use_default_colors();
 
-    // TODO: Better colour scheme, neon colours but also polyphonic based.
-    init_pair(1, 175, -1);
-    init_pair(2, 34, -1);
-    init_pair(3, 172, -1);
+    setupColours();
 
     // Load ASCII art
     std::ifstream file(logoFilePath);
@@ -108,8 +104,11 @@ int main(int argc, char *argv[]) {
     WINDOW *subwindow =
         newwin(win_height, win_width, PADDING_TOP, PADDING_LEFT);
 
+    std::random_device rd;
+    std::mt19937 rng(rd());
+
     // Create animation context
-    AnimationContext context{subwindow, asciiArt, sourceDir};
+    AnimationContext context{subwindow, asciiArt, sourceDir, rng};
 
     if (!animationName.empty()) {
         // Play a specific animation by name

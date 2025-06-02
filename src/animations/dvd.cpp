@@ -13,6 +13,7 @@
 #include <thread>
 
 #include "../common.h"
+#include "../util/colours.h"
 
 void DVD::drawFrame(const AnimationContext &context) {
     int outerWinHeight, winWidth;
@@ -30,18 +31,19 @@ void DVD::drawFrame(const AnimationContext &context) {
     int dx = 1;
     int dy = 1;
     int steps = 350;  // total bounces
-    std::random_device rd;
-    std::mt19937 g(rd());
 
-    // Pick a random initial direction
-    if (g() % 2) {
+    // 50/50 random inital directions
+    std::bernoulli_distribution dist(0.5);
+    if (dist(context.rng)) {
         dx = -dx;
     }
-    if (g() % 2) {
+    if (dist(context.rng)) {
         dy = -dy;
     }
 
-    int trailLength = 4;
+    Gradient gradient = getRandomGradient(context.rng);
+
+    int trailLength = GRADIENT_LENGTH;
     std::deque<std::pair<int, int>> trail;
     trail.push_back({x, y});
     for (int i = 0; i < steps; ++i) {
@@ -51,10 +53,11 @@ void DVD::drawFrame(const AnimationContext &context) {
             int tx = trail[t].first;
             int ty = trail[t].second;
 
-            // TODO: Better colours, maybe even fade the trail out
-            wattron(paddedWindow, COLOR_PAIR(t) | A_BOLD);
+            int colourIndex = getColourIndex(gradient, t);
+
+            wattron(paddedWindow, COLOR_PAIR(colourIndex) | A_BOLD);
             mvwprintw(paddedWindow, ty, tx, "%s", polyphonic.c_str());
-            wattroff(paddedWindow, COLOR_PAIR(t) | A_BOLD);
+            wattroff(paddedWindow, COLOR_PAIR(colourIndex) | A_BOLD);
         }
         wrefresh(paddedWindow);
         std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_TIME / 4));
