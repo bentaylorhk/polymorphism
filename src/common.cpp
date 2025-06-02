@@ -5,6 +5,8 @@
 
 #include "common.h"
 
+#include <ncurses.h>
+
 #include <algorithm>
 #include <sstream>
 
@@ -60,4 +62,22 @@ std::string toLower(const std::string &input) {
                        return std::tolower(c);
                    });
     return result;
+}
+
+std::vector<std::pair<int, int>> getFilledCells(WINDOW *window) {
+    int rows, cols;
+    getmaxyx(window, rows, cols);
+
+    std::vector<std::pair<int, int>> filledCells;
+
+    for (int y = 0; y < rows; ++y) {
+        for (int x = 0; x < cols; ++x) {
+            chtype ch = mvwinch(window, y, x);
+            if ((ch & A_CHARTEXT) != ' ') {
+                filledCells.emplace_back(y, x);
+            }
+        }
+    }
+
+    return filledCells;
 }

@@ -121,6 +121,17 @@ int main(int argc, char *argv[]) {
             std::cerr << std::endl;
             return EXIT_FAILURE;
         }
+
+        // TODO: Potentially delete on main run.
+        if (animation->startState == TransitionState::Anything) {
+            for (int y = 0; y < win_height; ++y) {
+                for (int x = 0; x < win_width; ++x) {
+                    mvwaddch(context.window, y, x, '@');
+                }
+            }
+            wrefresh(context.window);
+        }
+
         animation->run(context);
     } else {
         loop(context);

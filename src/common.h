@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <ncurses.h>
+
 #include <string>
 #include <vector>
 
@@ -29,3 +31,5 @@ std::string toLower(const std::string &input);
 
 const std::vector<char> intensityChars = {'.', 'o', 'x', '*',
                                           '#', 'X', '$', '@'};
+
+std::vector<std::pair<int, int>> getFilledCells(WINDOW *window);

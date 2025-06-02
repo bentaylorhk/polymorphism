@@ -14,6 +14,7 @@
 #include "code_scroll.h"
 #include "diagonal_fill_wipe.h"
 #include "dvd.h"
+#include "fuzz_out.h"
 #include "game_of_life.h"
 #include "lissajous.h"
 #include "neofetch.h"
@@ -27,7 +28,7 @@ const std::vector<std::shared_ptr<Animation>> allAnimations = {
     std::make_shared<Lissajous>(),    std::make_shared<SingleCascade>(),
     std::make_shared<DVD>(),          std::make_shared<GameOfLife>(),
     std::make_shared<CharFill>(),     std::make_shared<DiagonalFillWipe>(),
-    std::make_shared<SineWaves>(),
+    std::make_shared<SineWaves>(),    std::make_shared<FuzzOut>(),
     // TODO: Finish neofetch, could make a full one in house and display ncurses
     // colours used.
     // std::make_shared<Neofetch>(),
