@@ -43,21 +43,6 @@ void loop(AnimationContext &context) {
 
     while (true) {
         currentAnimation->run(context);
-
-        // Wait for user input to skip or quit
-        /*
-        TODO Figure out how to handle user input, probs through
-        TODO This logic will also likely handle timeout issues
-        interrupts/curses. int ch = getch(); if (ch == ' ') {
-            // Skip to the next animation
-            continue;
-        } else if (ch == 'q') {
-            // Quit the program
-            break;
-        }
-        */
-
-        // Getting the next animation randomly based off it's end state
         currentAnimation = randomAnimation(currentAnimation->endState);
     }
 }
@@ -136,7 +121,7 @@ int main(int argc, char *argv[]) {
             std::cerr << "Error: Animation '" << animationName
                       << "' not found. Available animations are:";
             for (const auto &animation : allAnimations) {
-                std::cerr << " " << animation->name();
+                std::cerr << " " << animation->name() << ",";
             }
             std::cerr << std::endl;
             return EXIT_FAILURE;

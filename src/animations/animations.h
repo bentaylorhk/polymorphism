@@ -10,16 +10,16 @@
 #include <vector>
 
 #include "code_scroll.h"
+#include "dvd.h"
 #include "lissajous.h"
 #include "retro_cascade.h"
 #include "shutterboard.h"
 
 const std::vector<std::shared_ptr<Animation>> allAnimations = {
     // TODO: Ensure all animations done at end
-    std::make_shared<Shutterboard>(),
-    std::make_shared<CodeScroll>(),
-    std::make_shared<Lissajous>(),
-    std::make_shared<RetroCascade>(),
+    std::make_shared<Shutterboard>(), std::make_shared<CodeScroll>(),
+    std::make_shared<Lissajous>(),    std::make_shared<RetroCascade>(),
+    std::make_shared<DVD>(),
 };
 
 std::map<TransitionState, std::vector<std::shared_ptr<Animation>>>

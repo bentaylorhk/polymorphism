@@ -21,7 +21,7 @@ void Lissajous::drawFrame(const AnimationContext& context) {
     std::uniform_int_distribution<int> freq_dist(1, 6);
 
     int cols, rows;
-    context.getDimensions(cols, rows);
+    context.getDimensions(rows, cols);
 
     // Center and radii
     double cx = cols / 2.0;

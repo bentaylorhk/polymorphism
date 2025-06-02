@@ -21,7 +21,7 @@ struct AnimationContext {
     WINDOW *window;
     const AsciiArt &asciiArt;
     const std::string &sourceDir;
-    void getDimensions(int &width, int &height) const {
+    inline void getDimensions(int &height, int &width) const {
         getmaxyx(window, height, width);
     }
 };

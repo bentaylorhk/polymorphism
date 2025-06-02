@@ -16,12 +16,11 @@ void RetroCascade::drawFrame(const AnimationContext &context) {
     int polyphonicLength = polyphonic.size();
 
     int winHeight, outerWinWidth;
-    getmaxyx(context.window, winHeight, outerWinWidth);
+    context.getDimensions(winHeight, outerWinWidth);
 
     // Padding outer columns
     int padding = 4;
     int winWidth = outerWinWidth - (padding * 2);
-    ;
 
     WINDOW *paddedWindow =
         derwin(context.window, winHeight, winWidth, 0, padding);

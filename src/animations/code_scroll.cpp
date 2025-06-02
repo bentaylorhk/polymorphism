@@ -39,7 +39,7 @@ void CodeScroll::drawFrame(const AnimationContext& context) {
     }
 
     int rows, cols;
-    context.getDimensions(cols, rows);
+    context.getDimensions(rows, cols);
 
     int lastLine = rows - 1;
 
