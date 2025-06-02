@@ -19,8 +19,8 @@ void SineWaves::drawFrame(const AnimationContext &context) {
     double frequency = 2.0 * M_PI / cols * 2.0;  // 2 full waves across screen
     static int phase = 0;
 
-    int substeps = 6;       // More detail per column
-    int frames = cols * 2;  // Number of frames for a full cycle
+    int substeps = 6;  // More detail per column
+    int frames = 600;  // Number of frames for a full cycle
     for (int frame = 0; frame < frames; ++frame) {
         werase(context.window);
         for (int x = 0; x < cols; ++x) {
@@ -28,9 +28,24 @@ void SineWaves::drawFrame(const AnimationContext &context) {
             int max_idx[rows];
             for (int i = 0; i < rows; ++i)
                 max_idx[i] = -1;
+            // Calculate the maximum possible amplitude for the sum of the two
+            // waves The max sum is amplitude + amplitude * 0.7 = amplitude
+            // * 1.7
+            double combined_amplitude =
+                rows * 0.4 / 1.7;  // scale so max sum fits screen
+            double amplitude1 = combined_amplitude;
+            double amplitude2 = combined_amplitude * 0.7;
             for (int sub = 0; sub < substeps; ++sub) {
                 double fx = x + (double)sub / substeps;
-                double y = amplitude * std::sin(frequency * (fx + phase));
+                // First sine wave
+                double y1 = amplitude1 * std::sin(frequency * (fx + phase));
+                // Second sine wave: slightly different frequency and phase
+                // offset
+                double freq2 = frequency * 1.07;
+                double phase2 = phase * 1.13 + 17;
+                double y2 = amplitude2 * std::sin(freq2 * (fx + phase2));
+                // Combine the two
+                double y = y1 + y2;
                 double fy = mid_row + y;
                 int draw_y = static_cast<int>(fy);
                 if (draw_y >= 0 && draw_y < rows) {
@@ -53,8 +68,8 @@ void SineWaves::drawFrame(const AnimationContext &context) {
             }
         }
         wrefresh(context.window);
-        std::this_thread::sleep_for(std::chrono::milliseconds(83));
-        phase = (phase + 2) % cols;
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        phase = phase + 1;
     }
     // Hold final frame for a moment
     std::this_thread::sleep_for(std::chrono::seconds(2));
