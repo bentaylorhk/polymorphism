@@ -1,3 +1,8 @@
+/**
+ * Benjamin Michael Taylor (bentaylorhk)
+ * 2025
+ */
+
 #pragma once
 
 #include <cmath>

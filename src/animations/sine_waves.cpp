@@ -1,3 +1,8 @@
+/**
+ * Benjamin Michael Taylor (bentaylorhk)
+ * 2025
+ */
+
 #include "sine_waves.h"
 
 #include <ncurses.h>
@@ -7,6 +12,9 @@
 #include <thread>
 
 #include "../common.h"
+
+constexpr int LINE_WAIT_TIME = 25;
+constexpr int WAVE_WAIT_TIME = 50;
 
 void SineWaves::drawFrame(const AnimationContext &context) {
     werase(context.window);
@@ -29,6 +37,15 @@ void SineWaves::drawFrame(const AnimationContext &context) {
     double phase2_rand = (context.rng() % 360) * M_PI / 180.0;  // 0 to 2pi
     double amp2_rand = 0.6 + (context.rng() % 20) * 0.02;       // 0.6 to 1.0
 
+    // Intro: animate '@' moving right to left across mid_row
+    for (int x = cols - 1; x >= 0; --x) {
+        mvwaddch(context.window, mid_row, x, '@');
+        wrefresh(context.window);
+        std::this_thread::sleep_for(std::chrono::milliseconds(LINE_WAIT_TIME));
+    }
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    // Sine wave animation
     for (int frame = 0; frame < frames; ++frame) {
         // Calculate ease value for amplitude envelope
         double ease = 1.0;
@@ -86,9 +103,22 @@ void SineWaves::drawFrame(const AnimationContext &context) {
             }
         }
         wrefresh(context.window);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(std::chrono::milliseconds(WAVE_WAIT_TIME));
         phase = phase + 1;
     }
-    // Hold final frame for a moment
-    std::this_thread::sleep_for(std::chrono::seconds(2));
+
+    // Instantly draw the '@' character across the middle row
+    werase(context.window);
+    for (int x = 0; x < cols; ++x) {
+        mvwaddch(context.window, mid_row, x, '@');
+    }
+    wrefresh(context.window);
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    for (int x = 0; x < cols; ++x) {
+        mvwaddch(context.window, mid_row, x, ' ');
+        wrefresh(context.window);
+        std::this_thread::sleep_for(std::chrono::milliseconds(LINE_WAIT_TIME));
+    }
 }
