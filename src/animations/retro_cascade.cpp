@@ -13,23 +13,33 @@
 #include <thread>
 
 void RetroCascade::drawFrame(const AnimationContext &context) {
-    int n = polyphonic.size();
-    int winHeight, winWidth;
-    getmaxyx(context.window, winHeight, winWidth);
-    int col_width = winWidth / n;
-    int col_rem = winWidth % n;
+    int polyphonicLength = polyphonic.size();
+
+    int winHeight, outerWinWidth;
+    getmaxyx(context.window, winHeight, outerWinWidth);
+
+    // Padding outer columns
+    int padding = 4;
+    int winWidth = outerWinWidth - (padding * 2);
+    ;
+
+    WINDOW *paddedWindow =
+        derwin(context.window, winHeight, winWidth, 0, padding);
+
+    int col_width = winWidth / polyphonicLength;
+    int col_rem = winWidth % polyphonicLength;
     std::vector<WINDOW *> subwins;
     int x = 0;
-    for (int i = 0; i < n; ++i) {
-        int w = col_width + (i < col_rem ? 1 : 0);
-        subwins.push_back(derwin(context.window, winHeight, w, 0, x));
+    for (int i = 0; i < polyphonicLength; ++i) {
+        int w = col_width;  // + (i < col_rem ? 1 : 0);
+        subwins.push_back(derwin(paddedWindow, winHeight, w, 0, x));
         x += w;
     }
 
     int middleRow = winHeight / 2;
     int trailLength = 5;
 
-    std::vector<int> indices(n);
+    std::vector<int> indices(polyphonicLength);
     std::iota(indices.begin(), indices.end(), 0);
     std::random_device rd;
     std::mt19937 g(rd());
@@ -45,15 +55,31 @@ void RetroCascade::drawFrame(const AnimationContext &context) {
                 mvwaddch(subwins[idx], eraseIdx, (col_width - 1) / 2, ' ');
             }
             wrefresh(subwins[idx]);
-            std::this_thread::sleep_for(std::chrono::milliseconds(60));
+            std::this_thread::sleep_for(std::chrono::milliseconds(83));
         }
-        werase(subwins[idx]);
-        mvwaddch(subwins[idx], winHeight / 2, (col_width - 1) / 2,
-                 polyphonic[idx]);
-        wrefresh(subwins[idx]);
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(3500));
+
+    std::shuffle(indices.begin(), indices.end(), g);
+
+    for (int idx : indices) {
+        for (int row = middleRow; row < winHeight + trailLength; row++) {
+            int eraseIdx = row - trailLength;
+            if (row < winHeight) {
+                mvwaddch(subwins[idx], row, (col_width - 1) / 2,
+                         polyphonic[idx]);
+            }
+            if (eraseIdx >= middleRow) {
+                mvwaddch(subwins[idx], eraseIdx, (col_width - 1) / 2, ' ');
+            }
+            wrefresh(subwins[idx]);
+            std::this_thread::sleep_for(std::chrono::milliseconds(83));
+        }
+    }
+
     for (auto w : subwins) {
         delwin(w);
     }
+    delwin(paddedWindow);
 }
