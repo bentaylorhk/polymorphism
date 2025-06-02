@@ -4,11 +4,13 @@
  */
 
 #pragma once
+
 #include <algorithm>
 #include <map>
 #include <memory>
 #include <vector>
 
+#include "char_fill.h"
 #include "code_scroll.h"
 #include "dvd.h"
 #include "game_of_life.h"
@@ -22,6 +24,7 @@ const std::vector<std::shared_ptr<Animation>> allAnimations = {
     std::make_shared<Shutterboard>(), std::make_shared<CodeScroll>(),
     std::make_shared<Lissajous>(),    std::make_shared<RetroCascade>(),
     std::make_shared<DVD>(),          std::make_shared<GameOfLife>(),
+    std::make_shared<CharFill>(),
     // TODO: Finish neofetch, could make a full one in house and display ncurses
     // colours used.
     // std::make_shared<Neofetch>(),

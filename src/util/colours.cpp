@@ -5,9 +5,9 @@
 
 #include "colours.h"
 
-#include <algorithm>
 #include <ncurses.h>
 
+#include <algorithm>
 #include <random>
 
 void setupColours() {
@@ -42,7 +42,8 @@ Gradient getRandomGradient(std::mt19937& rng) {
 
 std::vector<Gradient> getNUniqueGradients(std::mt19937& rng, int n) {
     if (n > (int)gradients.size()) {
-        throw std::out_of_range("Requested more unique gradients than available");
+        throw std::out_of_range(
+            "Requested more unique gradients than available");
     }
     std::vector<int> indices(gradients.size());
     std::iota(indices.begin(), indices.end(), 0);
@@ -52,4 +53,10 @@ std::vector<Gradient> getNUniqueGradients(std::mt19937& rng, int n) {
         result.push_back(static_cast<Gradient>(indices[i]));
     }
     return result;
+}
+
+int getRandomColourIndex(std::mt19937& rng) {
+    std::uniform_int_distribution<int> dist(1,
+                                            gradients.size() * GRADIENT_LENGTH);
+    return dist(rng);
 }
