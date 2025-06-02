@@ -8,6 +8,7 @@
 #include <ncurses.h>
 
 #include <chrono>
+#include <deque>
 #include <random>
 #include <thread>
 
@@ -28,7 +29,7 @@ void DVD::drawFrame(const AnimationContext &context) {
     int y = winHeight / 2;
     int dx = 1;
     int dy = 1;
-    int steps = 200;  // total bounces
+    int steps = 350;  // total bounces
     std::random_device rd;
     std::mt19937 g(rd());
 
@@ -40,11 +41,25 @@ void DVD::drawFrame(const AnimationContext &context) {
         dy = -dy;
     }
 
+    int trailLength = 4;
+    std::deque<std::pair<int, int>> trail;
+    trail.push_back({x, y});
     for (int i = 0; i < steps; ++i) {
         werase(paddedWindow);
-        mvwprintw(paddedWindow, y, x, "%s", polyphonic.c_str());
+        // Draw trail from oldest to newest, so newest is on top
+        for (size_t t = 0; t < trail.size(); ++t) {
+            int tx = trail[t].first;
+            int ty = trail[t].second;
+
+            // TODO: Better colours, maybe even fade the trail out
+            wattron(paddedWindow, COLOR_PAIR(t));
+            mvwprintw(paddedWindow, ty, tx, "%s", polyphonic.c_str());
+            wattroff(paddedWindow, COLOR_PAIR(t));
+        }
         wrefresh(paddedWindow);
-        std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_TIME / 2));
+        std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_TIME / 4));
+
+        // Get new position of front word
         x += dx;
         y += dy;
         if (x <= 0 || x + wordLen >= winWidth)
@@ -60,6 +75,11 @@ void DVD::drawFrame(const AnimationContext &context) {
             y = 0;
         if (y >= winHeight)
             y = winHeight - 1;
+
+        trail.push_back({x, y});
+        if ((int)trail.size() > trailLength) {
+            trail.pop_front();
+        }
     }
 
     delwin(paddedWindow);
