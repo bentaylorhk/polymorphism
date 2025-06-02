@@ -17,7 +17,6 @@ void Animation::run(const AnimationContext &context) {
     });
 
     if (fut.wait_for(MAX_ANIMATION_DURATION) == std::future_status::timeout) {
-        // Timeout! You can show a message or clean up if needed
         // mvwprintw(context.window, 0, 0, "Animation timed out!");
         // wrefresh(context.window);
     } else {

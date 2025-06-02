@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+const std::string polyphonic = "POLYPHONIC";
+
 using AsciiArt = std::vector<std::vector<char>>;
 
 void getStringDimensions(const std::string &input, int &width, int &height);
