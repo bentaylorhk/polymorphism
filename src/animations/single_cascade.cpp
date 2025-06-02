@@ -3,14 +3,14 @@
  * 2025
  */
 
+#include "single_cascade.h"
+
 #include <ncurses.h>
 
 #include <algorithm>
 #include <chrono>
 #include <random>
 #include <thread>
-
-#include "single_cascade.h"
 
 void SingleCascade::drawFrame(const AnimationContext &context) {
     int polyphonicLength = polyphonic.size();
@@ -76,7 +76,10 @@ void SingleCascade::drawFrame(const AnimationContext &context) {
     }
 
     for (auto w : subwins) {
+        overwrite(w, paddedWindow);
         delwin(w);
     }
+    // Copy the final frame to the parent window before deleting paddedWindow
+    overwrite(paddedWindow, context.window);
     delwin(paddedWindow);
 }

@@ -107,5 +107,7 @@ void DVD::drawFrame(const AnimationContext &context) {
         }
     }
 
+    // Copy the final frame to the parent window before deleting paddedWindow
+    overwrite(paddedWindow, context.window);
     delwin(paddedWindow);
 }
