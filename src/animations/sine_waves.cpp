@@ -21,6 +21,14 @@ void SineWaves::drawFrame(const AnimationContext &context) {
 
     int substeps = 6;  // More detail per column
     int frames = 600;  // Number of frames for a full cycle
+
+    // Add randomness to sine wave parameters
+    double freq1_rand = 1.0 + (context.rng() % 15) * 0.01;      // 1.00 to 1.14
+    double freq2_rand = 1.07 + (context.rng() % 15) * 0.01;     // 1.07 to 1.21
+    double phase1_rand = (context.rng() % 360) * M_PI / 180.0;  // 0 to 2pi
+    double phase2_rand = (context.rng() % 360) * M_PI / 180.0;  // 0 to 2pi
+    double amp2_rand = 0.6 + (context.rng() % 20) * 0.02;       // 0.6 to 1.0
+
     for (int frame = 0; frame < frames; ++frame) {
         werase(context.window);
         for (int x = 0; x < cols; ++x) {
@@ -32,18 +40,20 @@ void SineWaves::drawFrame(const AnimationContext &context) {
             // waves The max sum is amplitude + amplitude * 0.7 = amplitude
             // * 1.7
             double combined_amplitude =
-                rows * 0.4 / 1.7;  // scale so max sum fits screen
+                rows * 0.4 / (1.0 + amp2_rand);  // scale so max sum fits screen
             double amplitude1 = combined_amplitude;
-            double amplitude2 = combined_amplitude * 0.7;
+            double amplitude2 = combined_amplitude * amp2_rand;
             for (int sub = 0; sub < substeps; ++sub) {
                 double fx = x + (double)sub / substeps;
-                // First sine wave
-                double y1 = amplitude1 * std::sin(frequency * (fx + phase));
+                // First sine wave with randomness
+                double y1 = amplitude1 *
+                            std::sin(frequency * freq1_rand * (fx + phase) +
+                                     phase1_rand);
                 // Second sine wave: slightly different frequency and phase
-                // offset
-                double freq2 = frequency * 1.07;
-                double phase2 = phase * 1.13 + 17;
-                double y2 = amplitude2 * std::sin(freq2 * (fx + phase2));
+                // offset, with randomness
+                double y2 = amplitude2 * std::sin(frequency * freq2_rand *
+                                                      (fx + phase * 1.13 + 17) +
+                                                  phase2_rand);
                 // Combine the two
                 double y = y1 + y2;
                 double fy = mid_row + y;
