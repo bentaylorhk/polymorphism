@@ -19,8 +19,8 @@ void SineWaves::drawFrame(const AnimationContext &context) {
     double frequency = 2.0 * M_PI / cols * 2.0;  // 2 full waves across screen
     static int phase = 0;
 
-    int substeps = 6;  // More detail per column
-    int frames = 600;  // Number of frames for a full cycle
+    int substeps = 6;   // More detail per column
+    int frames = 1000;  // Number of frames for a full cycle
 
     // Add randomness to sine wave parameters
     double freq1_rand = 1.0 + (context.rng() % 15) * 0.01;      // 1.00 to 1.14
@@ -30,6 +30,13 @@ void SineWaves::drawFrame(const AnimationContext &context) {
     double amp2_rand = 0.6 + (context.rng() % 20) * 0.02;       // 0.6 to 1.0
 
     for (int frame = 0; frame < frames; ++frame) {
+        // Calculate ease value for amplitude envelope
+        double ease = 1.0;
+        if (frame < frames * 0.1) {
+            ease = easeInOutQuad((double)frame / (frames * 0.1));
+        } else if (frame > frames * 0.9) {
+            ease = easeInOutQuad((double)(frames - frame) / (frames * 0.1));
+        }
         werase(context.window);
         for (int x = 0; x < cols; ++x) {
             // Track the maximum intensity index for this cell
@@ -40,7 +47,8 @@ void SineWaves::drawFrame(const AnimationContext &context) {
             // waves The max sum is amplitude + amplitude * 0.7 = amplitude
             // * 1.7
             double combined_amplitude =
-                rows * 0.4 / (1.0 + amp2_rand);  // scale so max sum fits screen
+                (rows * 0.4 * ease) /
+                (1.0 + amp2_rand);  // scale so max sum fits screen
             double amplitude1 = combined_amplitude;
             double amplitude2 = combined_amplitude * amp2_rand;
             for (int sub = 0; sub < substeps; ++sub) {
