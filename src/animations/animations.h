@@ -25,12 +25,12 @@
 #include "shutterboard.h"
 #include "sine_waves.h"
 #include "single_cascade.h"
+#include "verbs.h"
 #include "vertical_wipe.h"
-#include "words.h"
 
 const std::vector<std::shared_ptr<Animation>> allAnimations = {
     // TODO: Ensure all animations done at end
-    std::make_shared<Shutterboard>(),
+    // std::make_shared<Shutterboard>(),
     std::make_shared<CodeScroll>(),
     std::make_shared<Lissajous>(),
     std::make_shared<SingleCascade>(),
@@ -45,9 +45,7 @@ const std::vector<std::shared_ptr<Animation>> allAnimations = {
     std::make_shared<ColouredCascade>(),
     std::make_shared<LineWipe>(),
     std::make_shared<MovingWipe>(),
-
-    // TODO: Words, maybe verbs
-    // std::make_shared<Words>(),
+    std::make_shared<Verbs>(),
 
     // TODO: Finish neofetch, could make a full one in house and display ncurses
     // colours used.
