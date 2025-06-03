@@ -1,0 +1,56 @@
+/**
+ * Benjamin Michael Taylor (bentaylorhk)
+ * 2025
+ */
+
+#include "moving_wipe.h"
+
+#include <ncurses.h>
+
+#include <thread>
+#include <vector>
+
+constexpr int MOVE_SPEED = 20;
+
+void MovingWipe::drawFrame(const AnimationContext &context) {
+    int rows, cols;
+    context.getDimensions(rows, cols);
+
+    // Characters 0-9 for the wipe
+    const std::vector<char> movingChars = {'0', '1', '2', '3', '4', '5',
+                                           '6', '7', '8', '9', 'A', 'B',
+                                           'C', 'D', 'E', 'F'};
+    int numChars = movingChars.size();
+
+    // The wave will move to the right, text persists and shifts as a triangle
+    // Build the full sequence: movingChars, last char 5x, reversed movingChars,
+    // whitespace
+    std::vector<char> fullSeq = movingChars;
+    for (int i = 0; i < 5; ++i)
+        fullSeq.push_back(movingChars.back());
+    for (auto it = movingChars.rbegin(); it != movingChars.rend(); ++it)
+        fullSeq.push_back(*it);
+    fullSeq.push_back(' ');
+    int seqLen = fullSeq.size();
+    // Ensure the wipe continues until the last row is fully cleared
+    int maxShift = cols + seqLen + rows - 2;
+
+    for (int shift = 0; shift <= maxShift; ++shift) {
+        for (int y = 0; y < rows; ++y) {
+            int rowLen = std::min(shift - 2 * y + 1, cols);  // shift left by 2 per row
+            if (rowLen <= 0)
+                continue;
+            int startX = std::max(0, shift - 2 * y - rowLen + 1);
+            for (int x = 0; x < rowLen; ++x) {
+                int drawX = startX + x;
+                int charIdx = rowLen - 1 - x;
+                if (charIdx >= seqLen)
+                    charIdx = seqLen - 1;
+                if (drawX >= 0 && drawX < cols)
+                    mvwaddch(context.window, y, drawX, fullSeq[charIdx]);
+            }
+        }
+        wrefresh(context.window);
+        std::this_thread::sleep_for(std::chrono::milliseconds(MOVE_SPEED));
+    }
+}

@@ -124,9 +124,12 @@ int main(int argc, char *argv[]) {
 
         // TODO: Potentially delete on main run.
         if (animation->startState == TransitionState::Anything) {
+            std::bernoulli_distribution dist(0.25);
             for (int y = 0; y < win_height; ++y) {
                 for (int x = 0; x < win_width; ++x) {
-                    mvwaddch(context.window, y, x, '@');
+                    if (dist(context.rng)) {
+                        mvwaddch(context.window, y, x, '@');
+                    }
                 }
             }
             wrefresh(context.window);

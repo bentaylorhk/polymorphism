@@ -20,6 +20,7 @@
 #include "hypnotic_waves.h"
 #include "line_wipe.h"
 #include "lissajous.h"
+#include "moving_wipe.h"
 #include "neofetch.h"
 #include "shutterboard.h"
 #include "sine_waves.h"
@@ -43,6 +44,7 @@ const std::vector<std::shared_ptr<Animation>> allAnimations = {
     std::make_shared<HypnoticWaves>(),
     std::make_shared<ColouredCascade>(),
     std::make_shared<LineWipe>(),
+    std::make_shared<MovingWipe>(),
 
     // TODO: Words, maybe verbs
     // std::make_shared<Words>(),
