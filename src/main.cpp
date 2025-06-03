@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
         newwin(win_height, win_width, PADDING_TOP, PADDING_LEFT);
 
     std::random_device rd;
-    std::mt19937 rng(rd());
+    std::mt19937 rng(static_cast<std::mt19937::result_type>(rd()));
 
     // Create animation context
     AnimationContext context{subwindow, asciiArt, sourceDir, rng};

@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <vector>
-
 #include "animation.h"
 
 class GameOfLife : public Animation {

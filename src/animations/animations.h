@@ -16,12 +16,14 @@
 #include "dvd.h"
 #include "fuzz_out.h"
 #include "game_of_life.h"
+#include "hypnotic_waves.h"
 #include "lissajous.h"
 #include "neofetch.h"
 #include "shutterboard.h"
 #include "sine_waves.h"
 #include "single_cascade.h"
 #include "vertical_wipe.h"
+#include "words.h"
 
 const std::vector<std::shared_ptr<Animation>> allAnimations = {
     // TODO: Ensure all animations done at end
@@ -30,7 +32,11 @@ const std::vector<std::shared_ptr<Animation>> allAnimations = {
     std::make_shared<DVD>(),          std::make_shared<GameOfLife>(),
     std::make_shared<CharFill>(),     std::make_shared<DiagonalFillWipe>(),
     std::make_shared<SineWaves>(),    std::make_shared<FuzzOut>(),
-    std::make_shared<VerticalWipe>(),
+    std::make_shared<VerticalWipe>(), std::make_shared<HypnoticWaves>(),
+
+    // TODO: Words, maybe verbs
+    // std::make_shared<Words>(),
+
     // TODO: Finish neofetch, could make a full one in house and display ncurses
     // colours used.
     // std::make_shared<Neofetch>(),

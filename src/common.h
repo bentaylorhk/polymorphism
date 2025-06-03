@@ -32,4 +32,10 @@ std::string toLower(const std::string &input);
 const std::vector<char> intensityChars = {'.', 'o', 'x', '*',
                                           '#', 'X', '$', '@'};
 
+const std::vector<char> blankedIntensityChars = [] {
+    std::vector<char> v = intensityChars;
+    v.insert(v.begin(), ' ');
+    return v;
+}();
+
 std::vector<std::pair<int, int>> getFilledCells(WINDOW *window);
