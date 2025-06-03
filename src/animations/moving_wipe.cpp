@@ -10,16 +10,24 @@
 #include <thread>
 #include <vector>
 
-constexpr int MOVE_SPEED = 20;
+constexpr int MOVE_SPEED = 15;
 
 void MovingWipe::drawFrame(const AnimationContext &context) {
     int rows, cols;
     context.getDimensions(rows, cols);
 
-    // Characters 0-9 for the wipe
-    const std::vector<char> movingChars = {'0', '1', '2', '3', '4', '5',
-                                           '6', '7', '8', '9', 'A', 'B',
-                                           'C', 'D', 'E', 'F'};
+    // Build movingChars: a-z, A-Z, 0-9, then some symbols
+    std::vector<char> movingChars;
+    for (char c = 'a'; c <= 'z'; ++c)
+        movingChars.push_back(c);
+    for (char c = 'A'; c <= 'Z'; ++c)
+        movingChars.push_back(c);
+    for (char c = '0'; c <= '9'; ++c)
+        movingChars.push_back(c);
+    const std::vector<char> extraChars = {'!', '@', '#', '$', '%',
+                                          '^', '&', '*', '-', '+',
+                                          '=', '?', '/', '|', '~'};
+    movingChars.insert(movingChars.end(), extraChars.begin(), extraChars.end());
     int numChars = movingChars.size();
 
     // The wave will move to the right, text persists and shifts as a triangle
@@ -42,13 +50,13 @@ void MovingWipe::drawFrame(const AnimationContext &context) {
     // Lambda to map (y, x) based on corner
     auto mapYX = [&](int y, int x) -> std::pair<int, int> {
         switch (corner) {
-            case 0: // Top-left
+            case 0:  // Top-left
                 return {y, x};
-            case 1: // Top-right
+            case 1:  // Top-right
                 return {y, cols - 1 - x};
-            case 2: // Bottom-left
+            case 2:  // Bottom-left
                 return {rows - 1 - y, x};
-            case 3: // Bottom-right
+            case 3:  // Bottom-right
                 return {rows - 1 - y, cols - 1 - x};
         }
         return {y, x};
@@ -56,18 +64,21 @@ void MovingWipe::drawFrame(const AnimationContext &context) {
 
     for (int shift = 0; shift <= maxShift; ++shift) {
         for (int y = 0; y < rows; ++y) {
-            int rowLen = std::min(shift - 2 * y + 1, cols);  // shift left by 2 per row
+            int rowLen =
+                std::min(shift - 2 * y + 1, cols);  // shift left by 2 per row
             if (rowLen <= 0)
                 continue;
             int startX = std::max(0, shift - 2 * y - rowLen + 1);
             for (int x = 0; x < rowLen; ++x) {
                 int drawX = startX + x;
-                int charIdx = rowLen - 1 - x;
+                // int charIdx = rowLen - 1 - x;
+                int charIdx = (shift - 2 * y - x);  // Wrap around
                 if (charIdx >= seqLen)
                     charIdx = seqLen - 1;
                 if (drawX >= 0 && drawX < cols) {
                     auto [mappedY, mappedX] = mapYX(y, drawX);
-                    mvwaddch(context.window, mappedY, mappedX, fullSeq[charIdx]);
+                    mvwaddch(context.window, mappedY, mappedX,
+                             fullSeq[charIdx]);
                 }
             }
         }
