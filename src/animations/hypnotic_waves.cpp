@@ -14,16 +14,34 @@
 
 #include "../common.h"
 
+// const std::vector<char> otherChars = {' ', 'p', 'o', 'l', 'y', 'P',
+//                                       'H', 'O', 'N', 'I', 'C'};
+
+const std::vector<char> otherChars = {
+    ' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+    'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y',
+    'z', '.', ',', '?', '-', '_', '=', '+', '*', '#', '@'};
+
 void HypnoticWaves::drawFrame(const AnimationContext &context) {
     int winHeight, winWidth;
     context.getDimensions(winHeight, winWidth);
-    int frames = 600;
+    int frames = 1200;
     float t = 0.0f;
     float dt = 0.09f;
     float freq1 = 0.13f, freq2 = 0.09f, freq3 = 0.07f;
     float amp1 = 1.7f, amp2 = 1.2f, amp3 = 0.8f;
 
     for (int frame = 0; frame < frames; ++frame, t += dt) {
+        // TODO: Maybe put this into common?
+        // Calculate progress for easing
+        float progress = static_cast<float>(frame) / (frames - 1);
+        float ease = 1.0f;
+        if (progress < 0.15f) {
+            ease = easeInOutQuad(progress / 0.15f);  // Fade in
+        } else if (progress > 0.85f) {
+            ease =
+                1.0f - easeInOutQuad((progress - 0.85f) / 0.15f);  // Fade out
+        }
         werase(context.window);
         for (int y = 0; y < winHeight; ++y) {
             for (int x = 0; x < winWidth; ++x) {
@@ -40,9 +58,11 @@ void HypnoticWaves::drawFrame(const AnimationContext &context) {
                 v += std::sin(r * 2.5f - t * 1.5f) * 1.1f;
                 // Normalize to [0, 1]
                 float norm = (std::tanh(v) + 1.0f) / 2.0f;
-                int idx =
-                    static_cast<int>(norm * (blankedIntensityChars.size() - 1));
-                mvwaddch(context.window, y, x, blankedIntensityChars[idx]);
+
+                norm *= ease;
+
+                int idx = static_cast<int>(norm * (otherChars.size()));
+                mvwaddch(context.window, y, x, otherChars[idx]);
             }
         }
         wrefresh(context.window);
