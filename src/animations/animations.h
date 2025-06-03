@@ -12,6 +12,7 @@
 
 #include "char_fill.h"
 #include "code_scroll.h"
+#include "coloured_cascade.h"
 #include "diagonal_fill_wipe.h"
 #include "dvd.h"
 #include "fuzz_out.h"
@@ -27,12 +28,19 @@
 
 const std::vector<std::shared_ptr<Animation>> allAnimations = {
     // TODO: Ensure all animations done at end
-    std::make_shared<Shutterboard>(), std::make_shared<CodeScroll>(),
-    std::make_shared<Lissajous>(),    std::make_shared<SingleCascade>(),
-    std::make_shared<DVD>(),          std::make_shared<GameOfLife>(),
-    std::make_shared<CharFill>(),     std::make_shared<DiagonalFillWipe>(),
-    std::make_shared<SineWaves>(),    std::make_shared<FuzzOut>(),
-    std::make_shared<VerticalWipe>(), std::make_shared<HypnoticWaves>(),
+    std::make_shared<Shutterboard>(),
+    std::make_shared<CodeScroll>(),
+    std::make_shared<Lissajous>(),
+    std::make_shared<SingleCascade>(),
+    std::make_shared<DVD>(),
+    std::make_shared<GameOfLife>(),
+    std::make_shared<CharFill>(),
+    std::make_shared<DiagonalFillWipe>(),
+    std::make_shared<SineWaves>(),
+    std::make_shared<FuzzOut>(),
+    std::make_shared<VerticalWipe>(),
+    std::make_shared<HypnoticWaves>(),
+    std::make_shared<ColouredCascade>(),
 
     // TODO: Words, maybe verbs
     // std::make_shared<Words>(),
