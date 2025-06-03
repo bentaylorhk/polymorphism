@@ -10,7 +10,7 @@
 #include <thread>
 #include <vector>
 
-constexpr int MOVE_SPEED = 25;
+constexpr int MOVE_SPEED = 15;
 
 void MovingWipe::drawFrame(const AnimationContext &context) {
     int rows, cols;
@@ -70,7 +70,7 @@ void MovingWipe::drawFrame(const AnimationContext &context) {
             for (int x = 0; x < cols; ++x) {
                 if (x > edgeX)
                     continue;  // Outside the triangle
-                int charIdx = edgeX - x;
+                int charIdx = edgeX - x + shift;
                 if (charIdx >= seqLen)
                     charIdx = seqLen - 1;
                 auto [mappedY, mappedX] = mapYX(y, x);
