@@ -33,7 +33,26 @@ void MovingWipe::drawFrame(const AnimationContext &context) {
     fullSeq.push_back(' ');
     int seqLen = fullSeq.size();
     // Ensure the wipe continues until the last row is fully cleared
-    int maxShift = cols + seqLen + rows - 2;
+    int maxShift = cols + seqLen + 2 * (rows - 1) - 1;
+
+    // Randomly choose a corner: 0=TL, 1=TR, 2=BL, 3=BR
+    std::uniform_int_distribution<int> cornerDist(0, 3);
+    int corner = cornerDist(context.rng);
+
+    // Lambda to map (y, x) based on corner
+    auto mapYX = [&](int y, int x) -> std::pair<int, int> {
+        switch (corner) {
+            case 0: // Top-left
+                return {y, x};
+            case 1: // Top-right
+                return {y, cols - 1 - x};
+            case 2: // Bottom-left
+                return {rows - 1 - y, x};
+            case 3: // Bottom-right
+                return {rows - 1 - y, cols - 1 - x};
+        }
+        return {y, x};
+    };
 
     for (int shift = 0; shift <= maxShift; ++shift) {
         for (int y = 0; y < rows; ++y) {
@@ -46,8 +65,10 @@ void MovingWipe::drawFrame(const AnimationContext &context) {
                 int charIdx = rowLen - 1 - x;
                 if (charIdx >= seqLen)
                     charIdx = seqLen - 1;
-                if (drawX >= 0 && drawX < cols)
-                    mvwaddch(context.window, y, drawX, fullSeq[charIdx]);
+                if (drawX >= 0 && drawX < cols) {
+                    auto [mappedY, mappedX] = mapYX(y, drawX);
+                    mvwaddch(context.window, mappedY, mappedX, fullSeq[charIdx]);
+                }
             }
         }
         wrefresh(context.window);
