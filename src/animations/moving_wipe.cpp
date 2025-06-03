@@ -10,7 +10,7 @@
 #include <thread>
 #include <vector>
 
-constexpr int MOVE_SPEED = 15;
+constexpr int MOVE_SPEED = 25;
 
 void MovingWipe::drawFrame(const AnimationContext &context) {
     int rows, cols;
@@ -64,22 +64,17 @@ void MovingWipe::drawFrame(const AnimationContext &context) {
 
     for (int shift = 0; shift <= maxShift; ++shift) {
         for (int y = 0; y < rows; ++y) {
-            int rowLen =
-                std::min(shift - 2 * y + 1, cols);  // shift left by 2 per row
-            if (rowLen <= 0)
-                continue;
-            int startX = std::max(0, shift - 2 * y - rowLen + 1);
-            for (int x = 0; x < rowLen; ++x) {
-                int drawX = startX + x;
-                // int charIdx = rowLen - 1 - x;
-                int charIdx = (shift - 2 * y - x);  // Wrap around
+            int edgeX = shift - 2 * y;
+            if (edgeX < 0)
+                continue;  // Triangle not yet reached this row
+            for (int x = 0; x < cols; ++x) {
+                if (x > edgeX)
+                    continue;  // Outside the triangle
+                int charIdx = edgeX - x;
                 if (charIdx >= seqLen)
                     charIdx = seqLen - 1;
-                if (drawX >= 0 && drawX < cols) {
-                    auto [mappedY, mappedX] = mapYX(y, drawX);
-                    mvwaddch(context.window, mappedY, mappedX,
-                             fullSeq[charIdx]);
-                }
+                auto [mappedY, mappedX] = mapYX(y, x);
+                mvwaddch(context.window, mappedY, mappedX, fullSeq[charIdx]);
             }
         }
         wrefresh(context.window);
