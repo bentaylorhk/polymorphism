@@ -62,7 +62,9 @@ void MovingWipe::drawFrame(const AnimationContext &context) {
         return {y, x};
     };
 
-    for (int shift = 0; shift <= maxShift; ++shift) {
+    // Extend the main loop to include the trailing blank wipe
+    for (int shift = 0; shift <= maxShift + seqLen; ++shift) {
+        int tail = (shift > maxShift) ? (shift - maxShift) : 0;
         for (int y = 0; y < rows; ++y) {
             int edgeX = shift - 2 * y;
             if (edgeX < 0)
@@ -71,10 +73,12 @@ void MovingWipe::drawFrame(const AnimationContext &context) {
                 if (x > edgeX)
                     continue;  // Outside the triangle
                 int charIdx = edgeX - x + shift;
-                if (charIdx >= seqLen)
-                    charIdx = seqLen - 1;
+                charIdx = charIdx % seqLen;  // Wrap around
                 auto [mappedY, mappedX] = mapYX(y, x);
-                mvwaddch(context.window, mappedY, mappedX, fullSeq[charIdx]);
+                if (tail > 0 && charIdx >= seqLen - tail)
+                    mvwaddch(context.window, mappedY, mappedX, ' ');
+                else
+                    mvwaddch(context.window, mappedY, mappedX, fullSeq[charIdx]);
             }
         }
         wrefresh(context.window);
