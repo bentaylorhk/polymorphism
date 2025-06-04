@@ -16,11 +16,10 @@
 constexpr auto MAX_ANIMATION_DURATION = std::chrono::seconds(30);
 
 // Represents the different start and end conditions for an animation
-enum class TransitionState { Blank, Anything, Logo };
+enum class TransitionState { Blank, Anything };
 
 struct AnimationContext {
     WINDOW *window;
-    const AsciiArt &asciiArt;
     const std::string &sourceDir;
     std::mt19937 &rng;
     inline void getDimensions(int &height, int &width) const {

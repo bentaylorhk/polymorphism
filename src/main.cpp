@@ -7,10 +7,12 @@
 
 #include <CLI/CLI.hpp>
 #include <chrono>
+#include <deque>
 #include <map>
 #include <memory>
 #include <random>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "animations/animations.h"
@@ -26,20 +28,44 @@ void loop(AnimationContext &context) {
     std::map<TransitionState, std::vector<std::shared_ptr<Animation>>>
         animationsStartMap = getAnimationsByStartState();
 
+    std::deque<std::string> recentNames;
+    constexpr size_t RECENT_LIMIT = 6;
+
     auto randomAnimation =
         [&](TransitionState startState) -> std::shared_ptr<Animation> {
         std::vector<std::shared_ptr<Animation>> vec =
             animationsStartMap[startState];
         if (vec.empty())
             return nullptr;
-        std::uniform_int_distribution<size_t> dist(0, vec.size() - 1);
-        return vec[dist(context.rng)];
+        // Filter out recent animations if possible
+        std::vector<std::shared_ptr<Animation>> filtered;
+        for (const auto &anim : vec) {
+            if (std::find(recentNames.begin(), recentNames.end(),
+                          anim->name()) == recentNames.end())
+                filtered.push_back(anim);
+        }
+        // If all are filtered out, fallback to full list
+        const auto &pickFrom = filtered.empty() ? vec : filtered;
+        std::uniform_int_distribution<size_t> dist(0, pickFrom.size() - 1);
+        return pickFrom[dist(context.rng)];
     };
 
     auto currentAnimation = randomAnimation(TransitionState::Blank);
 
     while (true) {
-        currentAnimation->run(context);
+        try {
+            currentAnimation->run(context);
+        } catch (const std::exception &e) {
+            // Ignore and pick a new animation
+        }
+        // Track recent animations
+        recentNames.push_back(currentAnimation->name());
+        if (recentNames.size() > RECENT_LIMIT)
+            recentNames.pop_front();
+        // Sleep if ending on Blank
+        if (currentAnimation->endState == TransitionState::Blank) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
         currentAnimation = randomAnimation(currentAnimation->endState);
     }
 }
@@ -48,12 +74,6 @@ int main(int argc, char *argv[]) {
     CLI::App app{
         "Polyphonic RSVP: A collection of ASCII art animations made for the "
         "event 'Polyphonic RSVP'."};
-
-    std::string logoFilePath =
-        "/home/ben/repos/polyphonic-rsvp/ascii-art/POLYPHONIC_DOLLAR.txt";
-    app.add_option("--logo", logoFilePath, "Path to the ASCII logo file")
-        ->default_val(logoFilePath)
-        ->check(CLI::ExistingFile);
 
     std::string animationName;
     app.add_option("--animation", animationName,
@@ -73,21 +93,6 @@ int main(int argc, char *argv[]) {
 
     setupColours();
 
-    // Load ASCII art
-    std::ifstream file(logoFilePath);
-    if (!file.is_open()) {
-        endwin();
-        throw std::runtime_error("Failed to open ASCII art file: " +
-                                 logoFilePath);
-    }
-    std::string rawArt((std::istreambuf_iterator<char>(file)),
-                       std::istreambuf_iterator<char>());
-
-    // 2D array of chars, for easy iteration
-    int artHeight, artWidth;
-    getStringDimensions(rawArt, artWidth, artHeight);
-    AsciiArt asciiArt = stringTo2DArray(rawArt, artWidth, artHeight);
-
     // Creating a padded window to suit overscanned CRT
     int max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
@@ -104,7 +109,7 @@ int main(int argc, char *argv[]) {
     std::mt19937 rng(static_cast<std::mt19937::result_type>(rd()));
 
     // Create animation context
-    AnimationContext context{subwindow, asciiArt, sourceDir, rng};
+    AnimationContext context{subwindow, sourceDir, rng};
 
     if (!animationName.empty()) {
         // Play a specific animation by name

@@ -8,7 +8,8 @@
 
 class Shutterboard : public Animation {
    public:
-    Shutterboard() : Animation(TransitionState::Blank, TransitionState::Logo) {
+    Shutterboard()
+        : Animation(TransitionState::Blank, TransitionState::Anything) {
     }
 
     const char* name() const override {
