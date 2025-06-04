@@ -7,6 +7,7 @@
 
 #include "animation.h"
 
+/*
 class GameOfLife : public Animation {
    public:
     GameOfLife() : Animation(TransitionState::Logo, TransitionState::Anything) {
@@ -19,3 +20,4 @@ class GameOfLife : public Animation {
    protected:
     void drawFrame(const AnimationContext &context) override;
 };
+*/

@@ -4,6 +4,8 @@
  */
 
 #include <ncurses.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/spdlog.h>
 
 #include <CLI/CLI.hpp>
 #include <chrono>
@@ -35,8 +37,11 @@ void loop(AnimationContext &context) {
         [&](TransitionState startState) -> std::shared_ptr<Animation> {
         std::vector<std::shared_ptr<Animation>> vec =
             animationsStartMap[startState];
-        if (vec.empty())
+        if (vec.empty()) {
+            context.logger->error("No animations available for start state: {}",
+                                  static_cast<int>(startState));
             return nullptr;
+        }
         // Filter out recent animations if possible
         std::vector<std::shared_ptr<Animation>> filtered;
         for (const auto &anim : vec) {
@@ -47,23 +52,24 @@ void loop(AnimationContext &context) {
         // If all are filtered out, fallback to full list
         const auto &pickFrom = filtered.empty() ? vec : filtered;
         std::uniform_int_distribution<size_t> dist(0, pickFrom.size() - 1);
-        return pickFrom[dist(context.rng)];
+        auto chosen = pickFrom[dist(context.rng)];
+        context.logger->debug("Selected animation: {} (start state: {})",
+                              chosen->name(), static_cast<int>(startState));
+        return chosen;
     };
 
     auto currentAnimation = randomAnimation(TransitionState::Blank);
 
     while (true) {
-        try {
-            currentAnimation->run(context);
-        } catch (const std::exception &e) {
-            // Ignore and pick a new animation
-        }
+        currentAnimation->run(context);
         // Track recent animations
         recentNames.push_back(currentAnimation->name());
         if (recentNames.size() > RECENT_LIMIT)
             recentNames.pop_front();
         // Sleep if ending on Blank
         if (currentAnimation->endState == TransitionState::Blank) {
+            context.logger->debug(
+                "Sleeping for 1 second after blank transition.");
             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
         currentAnimation = randomAnimation(currentAnimation->endState);
@@ -71,6 +77,12 @@ void loop(AnimationContext &context) {
 }
 
 int main(int argc, char *argv[]) {
+    // Create logger only once
+    auto logger =
+        spdlog::basic_logger_mt("polyphonic_logger", "polyphonic.log");
+    logger->set_level(spdlog::level::debug);
+    logger->flush_on(spdlog::level::info);
+
     CLI::App app{
         "Polyphonic RSVP: A collection of ASCII art animations made for the "
         "event 'Polyphonic RSVP'."};
@@ -108,16 +120,18 @@ int main(int argc, char *argv[]) {
     std::random_device rd;
     std::mt19937 rng(static_cast<std::mt19937::result_type>(rd()));
 
-    // Create animation context
-    AnimationContext context{subwindow, sourceDir, rng};
+    // Create animation context with logger
+    AnimationContext context{subwindow, sourceDir, rng, logger};
 
     if (!animationName.empty()) {
+        logger->info("Requested specific animation: {}", animationName);
         // Play a specific animation by name
         std::shared_ptr<Animation> animation =
             findAnimationByName(animationName);
         if (!animation) {
             delwin(subwindow);
             endwin();
+            logger->error("Animation '{}' not found. Exiting.", animationName);
             std::cerr << "Error: Animation '" << animationName
                       << "' not found. Available animations are:";
             for (const auto &animation : allAnimations) {
@@ -142,11 +156,13 @@ int main(int argc, char *argv[]) {
 
         animation->run(context);
     } else {
+        logger->info("Starting animation loop");
         loop(context);
     }
 
     curs_set(TRUE);
     delwin(subwindow);
     endwin();
+    logger->info("Exited cleanly.");
     return EXIT_SUCCESS;
 }

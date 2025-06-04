@@ -4,6 +4,8 @@
  */
 
 #pragma once
+
+/*
 #include "animation.h"
 
 class Shutterboard : public Animation {
@@ -19,3 +21,4 @@ class Shutterboard : public Animation {
    protected:
     void drawFrame(const AnimationContext& context) override;
 };
+*/
