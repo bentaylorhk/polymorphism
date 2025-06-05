@@ -117,8 +117,9 @@ void Neofetch::drawFrame(const AnimationContext& context) {
     curs_set(TRUE);
     int info_y = top_pad;
     int info_x = info_col_start;
-    std::uniform_int_distribution<int> typing_delay(MS_PER_SIXTY_FOURTH_BEAT,
-                                                    MS_PER_SIXTEENTH_BEAT);
+    // Lower lambda = more variance, higher chance of long pauses
+    std::exponential_distribution<double> typing_delay_dist(
+        1.0 / 20.0);  // mean ~6ms, but more long tails
     for (size_t i = 0; i < info_lines.size() && (info_y + (int)i) < winHeight;
          ++i) {
         int line_y = info_y + i;
@@ -128,12 +129,14 @@ void Neofetch::drawFrame(const AnimationContext& context) {
             mvwaddch(context.window, line_y, line_x + c, line[c]);
             wmove(context.window, line_y, line_x + c + 1);
             wrefresh(context.window);
-            std::this_thread::sleep_for(
-                std::chrono::milliseconds(typing_delay(context.rng)));
+            // Exponential distribution: mostly short, sometimes long
+            int delay = std::clamp(
+                static_cast<int>(typing_delay_dist(context.rng)), 10, 60);
+            std::this_thread::sleep_for(std::chrono::milliseconds(delay));
         }
     }
-    curs_set(FALSE);
     std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_DOUBLE_BEAT));
+    curs_set(FALSE);
 
     // Animate gradient bars from left to right (fade in)
     constexpr int COLOUR_BAR_WIDTH = 6;
