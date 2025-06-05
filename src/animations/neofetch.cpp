@@ -97,23 +97,63 @@ void Neofetch::drawFrame(const AnimationContext& context) {
                   info_lines[i].c_str());
     }
 
-    // Print colour gradients at the bottom
+    // Fade in ASCII art
+    int fade_frames = 12;
+    for (int frame = 0; frame <= fade_frames; ++frame) {
+        float progress = (float)frame / fade_frames;
+        int lines_to_show = std::round(progress * art_lines.size());
+        werase(context.window);
+        for (int i = 0; i < lines_to_show && (art_top_pad + i) < winHeight;
+             ++i) {
+            mvwprintw(context.window, art_top_pad + i, left_pad, "%s",
+                      art_lines[i].c_str());
+        }
+        wrefresh(context.window);
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(MS_PER_SIXTEENTH_BEAT));
+    }
+
+    // Animate info text, one line at a time
+    for (size_t i = 0; i < info_lines.size() && (top_pad + (int)i) < winHeight;
+         ++i) {
+        mvwprintw(context.window, art_top_pad, left_pad, "%s",
+                  art_lines[0].c_str());
+        for (size_t j = 1;
+             j < art_lines.size() && (art_top_pad + (int)j) < winHeight; ++j) {
+            mvwprintw(context.window, art_top_pad + j, left_pad, "%s",
+                      art_lines[j].c_str());
+        }
+        for (size_t j = 0; j <= i; ++j) {
+            mvwprintw(context.window, top_pad + j, info_col_start, "%s",
+                      info_lines[j].c_str());
+        }
+        wrefresh(context.window);
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(MS_PER_EIGHTH_BEAT));
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_DOUBLE_BEAT));
+
+    // Animate gradient bars from left to right
     constexpr int COLOUR_BAR_WIDTH = 6;
     auto random_gradients = getAllRandomGradients(context.rng);
     int grad_y = winHeight - (int)random_gradients.size() - 1;
     int grad_x = info_col_start;
-    for (size_t g = 0; g < random_gradients.size(); ++g) {
-        for (int j = 0; j < GRADIENT_LENGTH; ++j) {
-            int colourPair = getInverseColourIndex(random_gradients[g], j);
+    for (int col = 0; col < GRADIENT_LENGTH * COLOUR_BAR_WIDTH; ++col) {
+        for (size_t g = 0; g < random_gradients.size(); ++g) {
+            int grad_idx = col / COLOUR_BAR_WIDTH;
+            if (grad_idx >= GRADIENT_LENGTH)
+                continue;
+            int colourPair =
+                getInverseColourIndex(random_gradients[g], grad_idx);
             wattron(context.window, COLOR_PAIR(colourPair));
-            for (int k = 0; k < COLOUR_BAR_WIDTH; ++k) {
-                mvwaddch(context.window, grad_y + g,
-                         grad_x + j * COLOUR_BAR_WIDTH + k, ' ');
-            }
+            mvwaddch(context.window, grad_y + g, grad_x + col, ' ');
             wattroff(context.window, COLOR_PAIR(colourPair));
         }
+        wrefresh(context.window);
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(MS_PER_THIRTY_SECOND_BEAT));
     }
     wrefresh(context.window);
-    std::this_thread::sleep_for(
-        std::chrono::milliseconds(MS_PER_OCTUPLE_BEAT * 2));
+    std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_OCTUPLE_BEAT));
 }
