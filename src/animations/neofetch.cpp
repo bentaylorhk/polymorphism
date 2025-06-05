@@ -32,10 +32,10 @@ OS - polyOS
 Kernel - 6.14.9-arch1-1
 Packages - 770 (pacman)
 Shell - /bin/bash 5.2.37
-Resolution - 320x240 @ 60.00Hz
+Resolution - 320x240 @ 60.08Hz
 WM - i3
 Font - scientifica
-CPU - AMD Ryzen 5 8500G @ 5.0GHz
+CPU - AMD Ryzen 5 8500G @ 5GHz
 GPU - AMD Radeon HD 8490
 Memory - 14.71GiB
 )";
@@ -69,7 +69,7 @@ void Neofetch::drawFrame(const AnimationContext& context) {
 
     int left_pad = 2;
     int art_col_width = 22;
-    int info_col_start = art_col_width + 2;
+    int info_col_start = art_col_width + 4;
     int top_pad = 1;
     int art_top_pad = top_pad + 5;
 
@@ -87,13 +87,18 @@ void Neofetch::drawFrame(const AnimationContext& context) {
     }
 
     // Print colour gradients at the bottom
-    int grad_y = winHeight - (int)gradients.size() - 1;
+    constexpr int COLOUR_BAR_WIDTH = 6;
+    auto random_gradients = getAllRandomGradients(context.rng);
+    int grad_y = winHeight - (int)random_gradients.size() - 1;
     int grad_x = info_col_start;
-    for (size_t g = 0; g < gradients.size(); ++g) {
+    for (size_t g = 0; g < random_gradients.size(); ++g) {
         for (int j = 0; j < GRADIENT_LENGTH; ++j) {
-            int colourPair = getInverseColourIndex(static_cast<Gradient>(g), j);
+            int colourPair = getInverseColourIndex(random_gradients[g], j);
             wattron(context.window, COLOR_PAIR(colourPair));
-            mvwaddch(context.window, grad_y + g, grad_x + j, ' ');
+            for (int k = 0; k < COLOUR_BAR_WIDTH; ++k) {
+                mvwaddch(context.window, grad_y + g,
+                         grad_x + j * COLOUR_BAR_WIDTH + k, ' ');
+            }
             wattroff(context.window, COLOR_PAIR(colourPair));
         }
     }
