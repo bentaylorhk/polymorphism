@@ -18,6 +18,7 @@
 #include "dvd.h"
 #include "fuzz_out.h"
 // #include "game_of_life.h"
+#include "fractal.h"
 #include "hypnotic_waves.h"
 #include "line_wipe.h"
 #include "lissajous.h"
@@ -25,6 +26,7 @@
 #include "neofetch.h"
 // #include "shutterboard.h"
 #include "colour_preview.h"
+#include "pyramid.h"
 #include "sine_waves.h"
 #include "single_cascade.h"
 #include "verbs.h"
@@ -42,7 +44,8 @@ const std::vector<std::shared_ptr<Animation>> allAnimations = {
     std::make_shared<VerticalWipe>(), std::make_shared<HypnoticWaves>(),
     std::make_shared<ColouredCascade>(), std::make_shared<LineWipe>(),
     std::make_shared<MovingWipe>(), std::make_shared<Verbs>(),
-    std::make_shared<ColourPreview>(),
+    std::make_shared<ColourPreview>(), std::make_shared<Fractal>(),
+    std::make_shared<Pyramid>(),
 
     // TODO: Finish neofetch, could make a full one in house and display ncurses
     // colours used.
