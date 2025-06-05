@@ -97,7 +97,7 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
         wrefresh(context.window);
         std::this_thread::sleep_for(std::chrono::milliseconds(40));
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
 
     // 3. Fade all cells back to '.' and then to blank, except POLYPHONIC (all
     // sections at once, each fills only its band)
@@ -169,7 +169,7 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
         wrefresh(context.window);
         std::this_thread::sleep_for(std::chrono::milliseconds(40));
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(600));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10000));
     werase(context.window);
     wrefresh(context.window);
 }

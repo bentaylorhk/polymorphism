@@ -3,7 +3,6 @@
  * 2025
  */
 
-// TODO: Fix the input context window such that it's cropped to the screen size.
 // TODO: Maybe prioritise better files, like this code_scroll and the main file
 
 #include "code_scroll.h"
@@ -12,6 +11,8 @@
 #include <filesystem>
 #include <fstream>
 #include <thread>
+
+#include "../util/colours.h"
 
 std::vector<std::string> CodeScroll::findFiles(
     const std::string& sourceDir) const {
@@ -57,6 +58,9 @@ void CodeScroll::drawFrame(const AnimationContext& context) {
 
     int lastLine = rows - 1;
 
+    Gradient gradient = getRandomGradient(context.rng);
+    int colourIndex = getColourIndex(gradient, 0);
+
     auto scrollPrint = [&](const std::string& text) {
         scroll(context.window);
 
@@ -69,7 +73,7 @@ void CodeScroll::drawFrame(const AnimationContext& context) {
         std::string word = "polyphonic";
         size_t pos = lowerText.find(word);
 
-        if (pos != std::string::npos && has_colors()) {
+        if (pos != std::string::npos) {
             // Print up to the match
             mvwaddnstr(context.window, lastLine, 0, displayText.c_str(), pos);
 

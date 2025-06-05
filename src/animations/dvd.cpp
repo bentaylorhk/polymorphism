@@ -77,7 +77,8 @@ void DVD::drawFrame(const AnimationContext &context) {
             for (size_t t = 0; t < p.trail.size(); ++t) {
                 int tx = p.trail[t].first;
                 int ty = p.trail[t].second;
-                int colourIndex = getColourIndex(p.gradient, t);
+                // Reverse the gradient: oldest = 0, newest = GRADIENT_LENGTH-1
+                int colourIndex = getColourIndex(p.gradient, (int)p.trail.size() - 1 - t);
                 wattron(paddedWindow, COLOR_PAIR(colourIndex) | A_BOLD);
                 mvwprintw(paddedWindow, ty, tx, "%s", polyphonic.c_str());
                 wattroff(paddedWindow, COLOR_PAIR(colourIndex) | A_BOLD);

@@ -17,7 +17,7 @@ void CharFill::drawFrame(const AnimationContext &context) {
     int rows, cols;
     context.getDimensions(rows, cols);
 
-    std::bernoulli_distribution dist(0.05);
+    std::bernoulli_distribution dist(0.1);
 
     int polyphonicIndex = 0;
     bool outputColours = false;
@@ -36,8 +36,6 @@ void CharFill::drawFrame(const AnimationContext &context) {
                 } else {
                     outputColours = dist(context.rng);
                     if (outputColours) {
-                        // TODO: Maybe better colour selection? Also maybe
-                        // change odds?
                         currentColourIndex = getRandomColourIndex(context.rng);
                         wattron(context.window, COLOR_PAIR(currentColourIndex));
                     }

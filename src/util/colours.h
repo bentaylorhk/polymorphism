@@ -14,18 +14,18 @@ constexpr int GRADIENT_LENGTH = 5;
 
 enum Gradient {
     Pink,
-    Green,
+    Cyan,
     Yellow,
     Red,
-    Brown,
+    Green,
 };
 
 const std::vector<std::array<int, GRADIENT_LENGTH>> gradients = {
     {207, 206, 205, 204, 203},  // Pink
-    {46, 40, 34, 28, 22},       // Green
+    {114, 151, 150, 186, 194},  // Cyan
     {214, 220, 221, 222, 223},  // Yellow
-    {196, 160, 124, 88, 52},    // Red
-    {94, 101, 144, 187, 230},   // Brown
+    {160, 166, 172, 215, 180},  // Red
+    {118, 113, 65, 107, 187},   // Green
 };
 
 void setupColours();
