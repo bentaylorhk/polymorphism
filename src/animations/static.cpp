@@ -12,7 +12,7 @@ void Static::drawFrame(const AnimationContext &context) {
     context.getDimensions(rows, cols);
 
     // Duration of static in ms
-    int numFrames = 750;
+    int numFrames = 1000;
 
     // Use blankedIntensityChars for static
     std::uniform_int_distribution<int> charDist(

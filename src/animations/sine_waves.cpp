@@ -126,4 +126,7 @@ void SineWaves::drawFrame(const AnimationContext &context) {
         wrefresh(context.window);
         std::this_thread::sleep_for(std::chrono::milliseconds(LINE_WAIT_TIME));
     }
+    werase(context.window);
+    wrefresh(context.window);
+    std::this_thread::sleep_for(std::chrono::milliseconds(PAUSE_TIME));
 }
