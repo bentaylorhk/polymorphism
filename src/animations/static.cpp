@@ -7,6 +7,8 @@
 
 #include <ncurses.h>
 
+#include <thread>
+
 void Static::drawFrame(const AnimationContext &context) {
     int rows, cols;
     context.getDimensions(rows, cols);

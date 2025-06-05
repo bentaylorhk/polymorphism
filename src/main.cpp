@@ -4,8 +4,6 @@
  */
 
 #include <ncurses.h>
-#include <spdlog/sinks/basic_file_sink.h>
-#include <spdlog/spdlog.h>
 
 #include <CLI/CLI.hpp>
 #include <chrono>
@@ -27,7 +25,7 @@ constexpr int PADDING_BOTTOM = 0;
 constexpr int PADDING_LEFT = 2;
 constexpr int PADDING_RIGHT = 4;
 
-void loop(AnimationContext &context, std::optional<int> count = std::nullopt) {
+void loop(AnimationContext &context) {
     std::map<TransitionState, std::vector<std::shared_ptr<Animation>>>
         animationsStartMap = getAnimationsByStartState();
 
@@ -39,8 +37,6 @@ void loop(AnimationContext &context, std::optional<int> count = std::nullopt) {
         std::vector<std::shared_ptr<Animation>> vec =
             animationsStartMap[startState];
         if (vec.empty()) {
-            context.logger->error("No animations available for start state: {}",
-                                  static_cast<int>(startState));
             return nullptr;
         }
         // Filter out recent animations if possible
@@ -54,8 +50,6 @@ void loop(AnimationContext &context, std::optional<int> count = std::nullopt) {
         const auto &pickFrom = filtered.empty() ? vec : filtered;
         std::uniform_int_distribution<size_t> dist(0, pickFrom.size() - 1);
         auto chosen = pickFrom[dist(context.rng)];
-        context.logger->debug("Selected animation: {} (start state: {})",
-                              chosen->name(), static_cast<int>(startState));
         return chosen;
     };
 
@@ -63,13 +57,10 @@ void loop(AnimationContext &context, std::optional<int> count = std::nullopt) {
     std::shared_ptr<Animation> currentAnimation =
         findAnimationByName("single-cascade");
     if (!currentAnimation) {
-        context.logger->error(
-            "Animation 'single cascade' not found. Falling back to random.");
         currentAnimation = randomAnimation(TransitionState::Blank);
     }
 
-    int played = 0;
-    while (!count || played < *count) {
+    while (true) {
         currentAnimation->run(context);
 
         // Track recent animations
@@ -80,23 +71,14 @@ void loop(AnimationContext &context, std::optional<int> count = std::nullopt) {
 
         // Sleep if ending on Blank
         if (currentAnimation->endState == TransitionState::Blank) {
-            context.logger->debug(
-                "Sleeping for 1 second after blank transition.");
             std::this_thread::sleep_for(
                 std::chrono::milliseconds(MS_PER_DOUBLE_BEAT));
         }
         currentAnimation = randomAnimation(currentAnimation->endState);
-        ++played;
     }
 }
 
 int main(int argc, char *argv[]) {
-    // Create logger only once
-    auto logger =
-        spdlog::basic_logger_mt("polyphonic_logger", "polyphonic.log");
-    logger->set_level(spdlog::level::debug);
-    logger->flush_on(spdlog::level::info);
-
     CLI::App app{
         "Polyphonic RSVP: A collection of ASCII art animations made for the "
         "event 'Polyphonic RSVP'."};
@@ -110,11 +92,6 @@ int main(int argc, char *argv[]) {
                    "The source directory for the project files")
         ->default_val(sourceDir)
         ->check(CLI::ExistingDirectory);
-
-    std::optional<int> count;
-    app.add_option(
-        "--count", count,
-        "Number of animations to play before exiting (default: infinite)");
 
     CLI11_PARSE(app, argc, argv);
 
@@ -140,17 +117,15 @@ int main(int argc, char *argv[]) {
     std::mt19937 rng(static_cast<std::mt19937::result_type>(rd()));
 
     // Create animation context with logger
-    AnimationContext context{subwindow, sourceDir, rng, logger};
+    AnimationContext context{subwindow, sourceDir, rng};
 
     if (!animationName.empty()) {
-        logger->info("Requested specific animation: {}", animationName);
         // Play a specific animation by name
         std::shared_ptr<Animation> animation =
             findAnimationByName(animationName);
         if (!animation) {
             delwin(subwindow);
             endwin();
-            logger->error("Animation '{}' not found. Exiting.", animationName);
             std::cerr << "Error: Animation '" << animationName
                       << "' not found. Available animations are:";
             for (const auto &animation : allAnimations) {
@@ -174,13 +149,11 @@ int main(int argc, char *argv[]) {
 
         animation->run(context);
     } else {
-        logger->info("Starting animation loop");
-        loop(context, count);
+        loop(context);
     }
 
     curs_set(TRUE);
     delwin(subwindow);
     endwin();
-    logger->info("Exited cleanly.");
     return EXIT_SUCCESS;
 }

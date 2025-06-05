@@ -6,7 +6,6 @@
 #pragma once
 
 #include <ncurses.h>
-#include <spdlog/spdlog.h>
 
 #include <chrono>
 #include <memory>
@@ -23,7 +22,6 @@ struct AnimationContext {
     WINDOW *window;
     const std::string &sourceDir;
     std::mt19937 &rng;
-    std::shared_ptr<spdlog::logger> logger;
     inline void getDimensions(int &height, int &width) const {
         getmaxyx(window, height, width);
     }

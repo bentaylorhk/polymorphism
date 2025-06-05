@@ -12,8 +12,6 @@
 
 void Animation::run(const AnimationContext &context) {
     try {
-        context.logger->info("Running animation: {}", name());
-
         curs_set(FALSE);
 
         auto start = std::chrono::steady_clock::now();
@@ -30,7 +28,6 @@ void Animation::run(const AnimationContext &context) {
 
         if (fut.wait_for(MAX_ANIMATION_DURATION) ==
             std::future_status::timeout) {
-            context.logger->error("Animation '{}' timed out!", name());
         } else {
             fut.get();  // Re-throw exceptions if any
         }
@@ -38,16 +35,7 @@ void Animation::run(const AnimationContext &context) {
         // Hard resetting formatting after each animation
         wattron(context.window, A_NORMAL);
         wattron(context.window, COLOR_PAIR(0));
-
-        auto end = std::chrono::steady_clock::now();
-        std::chrono::duration<double> sec = end - start;
-        context.logger->info("Animation '{}' completed in {:.3f} s", name(),
-                             sec.count());
-
     } catch (const std::exception &e) {
-        context.logger->error("Exception in animation '{}': {}", name(),
-                              e.what());
     } catch (...) {
-        context.logger->error("Unknown exception in animation '{}'.", name());
     }
 }

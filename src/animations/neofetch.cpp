@@ -9,6 +9,7 @@
 
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "../util/colours.h"
