@@ -17,7 +17,6 @@
 #include "coloured_cascade.h"
 #include "diagonal_fill_wipe.h"
 #include "dvd.h"
-#include "fractal.h"
 #include "fuzz_out.h"
 #include "hypnotic_waves.h"
 #include "line_wipe.h"
@@ -38,7 +37,7 @@ const std::vector<std::shared_ptr<Animation>> allAnimations = {
     std::make_shared<VerticalWipe>(),    std::make_shared<HypnoticWaves>(),
     std::make_shared<ColouredCascade>(), std::make_shared<LineWipe>(),
     std::make_shared<MovingWipe>(),      std::make_shared<Verbs>(),
-    std::make_shared<ColourPreview>(),   std::make_shared<Fractal>(),
+    std::make_shared<ColourPreview>(),
     // TODO: Finish neofetch, could make a full one in house and display ncurses
     // std::make_shared<Neofetch>(),
 };

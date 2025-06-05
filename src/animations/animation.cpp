@@ -33,6 +33,10 @@ void Animation::run(const AnimationContext &context) {
             fut.get();  // Re-throw exceptions if any
         }
 
+        // Hard resetting formatting after each animation
+        wattron(context.window, A_NORMAL);
+        wattron(context.window, COLOR_PAIR(0));
+
         auto end = std::chrono::steady_clock::now();
         std::chrono::duration<double> sec = end - start;
         context.logger->info("Animation '{}' completed in {:.3f} s", name(),
