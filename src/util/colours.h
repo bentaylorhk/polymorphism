@@ -32,7 +32,11 @@ void setupColours();
 
 int getColourIndex(Gradient gradient, int index);
 
+int getInverseColourIndex(Gradient gradient, int index);
+
 Gradient getRandomGradient(std::mt19937& rng);
+
+std::vector<Gradient> getAllRandomGradients(std::mt19937& rng);
 
 std::vector<Gradient> getNUniqueGradients(std::mt19937& rng, int n);
 

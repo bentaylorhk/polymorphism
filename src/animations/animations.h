@@ -24,6 +24,7 @@
 #include "moving_wipe.h"
 #include "neofetch.h"
 // #include "shutterboard.h"
+#include "colour_preview.h"
 #include "sine_waves.h"
 #include "single_cascade.h"
 #include "verbs.h"
@@ -41,6 +42,7 @@ const std::vector<std::shared_ptr<Animation>> allAnimations = {
     std::make_shared<VerticalWipe>(), std::make_shared<HypnoticWaves>(),
     std::make_shared<ColouredCascade>(), std::make_shared<LineWipe>(),
     std::make_shared<MovingWipe>(), std::make_shared<Verbs>(),
+    std::make_shared<ColourPreview>(),
 
     // TODO: Finish neofetch, could make a full one in house and display ncurses
     // colours used.

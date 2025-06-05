@@ -22,7 +22,13 @@ void setupColours() {
 
     for (int i = 0; i < gradients.size(); i++) {
         for (int j = 0; j < GRADIENT_LENGTH; j++) {
+            // Black background, coloured text
             init_pair((i * GRADIENT_LENGTH) + j + 1, gradients[i][j], -1);
+
+            // Inverse: Coloured background, black text
+            init_pair((i * GRADIENT_LENGTH) + j + 1 +
+                          gradients.size() * GRADIENT_LENGTH,
+                      0, gradients[i][j]);
         }
     }
 }
@@ -57,8 +63,23 @@ std::vector<Gradient> getNUniqueGradients(std::mt19937& rng, int n) {
     return result;
 }
 
+std::vector<Gradient> getAllRandomGradients(std::mt19937& rng) {
+    return getNUniqueGradients(rng, gradients.size());
+}
+
 int getRandomColourIndex(std::mt19937& rng) {
     std::uniform_int_distribution<int> dist(1,
                                             gradients.size() * GRADIENT_LENGTH);
     return dist(rng);
+}
+
+int getInverseColourIndex(Gradient gradient, int index) {
+    if (gradient < 0 || gradient >= gradients.size() || index < 0 ||
+        index >= GRADIENT_LENGTH) {
+        throw std::out_of_range(
+            "Invalid gradient or index: gradient=" + std::to_string(gradient) +
+            ", index=" + std::to_string(index));
+    }
+    return (gradient * GRADIENT_LENGTH) + index + 1 +
+           gradients.size() * GRADIENT_LENGTH;
 }
