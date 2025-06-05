@@ -30,7 +30,6 @@
 #include "vertical_wipe.h"
 
 const std::vector<std::shared_ptr<Animation>> allAnimations = {
-    // TODO: Ensure all animations done at end
     std::make_shared<CodeScroll>(),      std::make_shared<Lissajous>(),
     std::make_shared<SingleCascade>(),   std::make_shared<DVD>(),
     std::make_shared<CharFill>(),        std::make_shared<DiagonalFillWipe>(),
@@ -39,8 +38,7 @@ const std::vector<std::shared_ptr<Animation>> allAnimations = {
     std::make_shared<ColouredCascade>(), std::make_shared<LineWipe>(),
     std::make_shared<MovingWipe>(),      std::make_shared<Verbs>(),
     std::make_shared<ColourPreview>(),   std::make_shared<Static>(),
-    // TODO: Finish neofetch, could make a full one in house and display ncurses
-    // std::make_shared<Neofetch>(),
+    std::make_shared<Neofetch>(),
 };
 
 std::map<TransitionState, std::vector<std::shared_ptr<Animation>>>
