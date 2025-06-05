@@ -12,6 +12,7 @@
 #include <deque>
 #include <map>
 #include <memory>
+#include <optional>
 #include <random>
 #include <string>
 #include <thread>
@@ -26,7 +27,7 @@ constexpr int PADDING_BOTTOM = 0;
 constexpr int PADDING_LEFT = 2;
 constexpr int PADDING_RIGHT = 4;
 
-void loop(AnimationContext &context) {
+void loop(AnimationContext &context, std::optional<int> count = std::nullopt) {
     std::map<TransitionState, std::vector<std::shared_ptr<Animation>>>
         animationsStartMap = getAnimationsByStartState();
 
@@ -67,7 +68,8 @@ void loop(AnimationContext &context) {
         currentAnimation = randomAnimation(TransitionState::Blank);
     }
 
-    while (true) {
+    int played = 0;
+    while (!count || played < *count) {
         currentAnimation->run(context);
 
         // Track recent animations
@@ -84,6 +86,7 @@ void loop(AnimationContext &context) {
                 std::chrono::milliseconds(MS_PER_DOUBLE_BEAT));
         }
         currentAnimation = randomAnimation(currentAnimation->endState);
+        ++played;
     }
 }
 
@@ -107,6 +110,11 @@ int main(int argc, char *argv[]) {
                    "The source directory for the project files")
         ->default_val(sourceDir)
         ->check(CLI::ExistingDirectory);
+
+    std::optional<int> count;
+    app.add_option(
+        "--count", count,
+        "Number of animations to play before exiting (default: infinite)");
 
     CLI11_PARSE(app, argc, argv);
 
@@ -167,7 +175,7 @@ int main(int argc, char *argv[]) {
         animation->run(context);
     } else {
         logger->info("Starting animation loop");
-        loop(context);
+        loop(context, count);
     }
 
     curs_set(TRUE);
