@@ -30,7 +30,6 @@ void HypnoticWaves::drawFrame(const AnimationContext &context) {
     float amp1 = 1.7f, amp2 = 1.2f, amp3 = 0.8f;
 
     for (int frame = 0; frame < FRAME_COUNT; ++frame, t += dt) {
-        // TODO: Maybe put this into common?
         // Calculate progress for easing
         float progress = static_cast<float>(frame) / (FRAME_COUNT - 1);
         float ease = 1.0f;

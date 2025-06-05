@@ -145,7 +145,6 @@ int main(int argc, char *argv[]) {
             return EXIT_FAILURE;
         }
 
-        // TODO: Potentially delete on main run.
         if (animation->startState == TransitionState::Anything) {
             std::bernoulli_distribution dist(0.25);
             for (int y = 0; y < win_height; ++y) {

@@ -38,7 +38,7 @@ void CodeScroll::drawFrame(const AnimationContext& context) {
 
     // Only keep the specific files
     const std::vector<std::string> allowed = {"common.h", "common.cpp",
-                                              "main.cpp", "sine_waves.cpp"};
+                                              "main.cpp", "code_scroll.cpp"};
     files.erase(
         std::remove_if(files.begin(), files.end(),
                        [&](const std::string& path) {

@@ -52,7 +52,7 @@ void Verbs::drawFrame(const AnimationContext &context) {
     printWord(polyphonic);
     wattroff(context.window, COLOR_PAIR(colorPair));
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_TRIPLE_BEAT));
+    std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_DOUBLE_BEAT));
 
     printWord("          ");
 
