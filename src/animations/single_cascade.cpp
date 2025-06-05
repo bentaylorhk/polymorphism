@@ -27,6 +27,9 @@ void SingleCascade::drawFrame(const AnimationContext &context) {
     WINDOW *paddedWindow =
         derwin(context.window, winHeight, winWidth, 0, padding);
 
+    wclear(paddedWindow);
+    wrefresh(paddedWindow);
+
     int col_width = winWidth / polyphonicLength;
     int col_rem = winWidth % polyphonicLength;
     std::vector<WINDOW *> subwins;

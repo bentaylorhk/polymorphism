@@ -36,6 +36,12 @@ void ColouredCascade::drawFrame(const AnimationContext &context) {
                                  numFullCols * wordLen));
     }
 
+    // Clear all subwindows to prevent inherited content/colours
+    for (auto *w : subwins) {
+        wclear(w);
+        wrefresh(w);
+    }
+
     // Prepare row indices and shuffle for random order
     std::vector<int> winOrder(subwins.size());
     std::iota(winOrder.begin(), winOrder.end(), 0);
