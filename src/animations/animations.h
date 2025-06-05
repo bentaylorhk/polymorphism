@@ -29,6 +29,7 @@
 #include "pyramid.h"
 #include "sine_waves.h"
 #include "single_cascade.h"
+#include "starfield.h"
 #include "verbs.h"
 #include "vertical_wipe.h"
 
@@ -45,7 +46,7 @@ const std::vector<std::shared_ptr<Animation>> allAnimations = {
     std::make_shared<ColouredCascade>(), std::make_shared<LineWipe>(),
     std::make_shared<MovingWipe>(), std::make_shared<Verbs>(),
     std::make_shared<ColourPreview>(), std::make_shared<Fractal>(),
-    std::make_shared<Pyramid>(),
+    std::make_shared<Pyramid>(), std::make_shared<Starfield>(),
 
     // TODO: Finish neofetch, could make a full one in house and display ncurses
     // colours used.

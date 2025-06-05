@@ -7,17 +7,15 @@
 
 #include "animation.h"
 
-/*
-class GameOfLife : public Animation {
+class Starfield : public Animation {
    public:
-    GameOfLife() : Animation(TransitionState::Logo, TransitionState::Anything) {
+    Starfield() : Animation(TransitionState::Blank, TransitionState::Anything) {
     }
 
     const char *name() const override {
-        return "game-of-life";
+        return "starfield";
     }
 
    protected:
     void drawFrame(const AnimationContext &context) override;
 };
-*/
