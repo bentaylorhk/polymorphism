@@ -64,10 +64,11 @@ void DVD::drawFrame(const AnimationContext &context) {
     // Dynamically set start delays for each poly
     std::vector<int> polyStartDelays(polys.size());
     for (size_t i = 0; i < polys.size(); ++i) {
-        polyStartDelays[i] = i * 50;
+        // One spawn per 4 bars (given eigth wait is used)
+        polyStartDelays[i] = i * 8 * 4;
     }
 
-    int steps = 500;  // total bounces
+    int steps = 600;  // total bounces
     for (int i = 0; i < steps; ++i) {
         werase(paddedWindow);
         for (int pidx = 0; pidx < polys.size(); ++pidx) {
@@ -78,7 +79,8 @@ void DVD::drawFrame(const AnimationContext &context) {
                 int tx = p.trail[t].first;
                 int ty = p.trail[t].second;
                 // Reverse the gradient: oldest = 0, newest = GRADIENT_LENGTH-1
-                int colourIndex = getColourIndex(p.gradient, (int)p.trail.size() - 1 - t);
+                int colourIndex =
+                    getColourIndex(p.gradient, (int)p.trail.size() - 1 - t);
                 wattron(paddedWindow, COLOR_PAIR(colourIndex) | A_BOLD);
                 mvwprintw(paddedWindow, ty, tx, "%s", polyphonic.c_str());
                 wattroff(paddedWindow, COLOR_PAIR(colourIndex) | A_BOLD);

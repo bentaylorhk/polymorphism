@@ -60,6 +60,7 @@ void SingleCascade::drawFrame(const AnimationContext &context) {
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_OCTUPLE_BEAT));
+    std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_OCTUPLE_BEAT));
 
     std::shuffle(indices.begin(), indices.end(), context.rng);
 

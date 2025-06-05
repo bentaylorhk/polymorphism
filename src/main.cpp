@@ -58,7 +58,14 @@ void loop(AnimationContext &context) {
         return chosen;
     };
 
-    auto currentAnimation = randomAnimation(TransitionState::Blank);
+    // Start with "single cascade" animation
+    std::shared_ptr<Animation> currentAnimation =
+        findAnimationByName("single-cascade");
+    if (!currentAnimation) {
+        context.logger->error(
+            "Animation 'single cascade' not found. Falling back to random.");
+        currentAnimation = randomAnimation(TransitionState::Blank);
+    }
 
     while (true) {
         currentAnimation->run(context);
