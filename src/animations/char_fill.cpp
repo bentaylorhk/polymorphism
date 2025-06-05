@@ -44,10 +44,12 @@ void CharFill::drawFrame(const AnimationContext &context) {
                 }
             }
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(MS_PER_THIRTY_SECOND_BEAT));
             wrefresh(context.window);
         }
     }
 
-    std::this_thread::sleep_for(std::chrono::seconds(2));
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(MS_PER_QUADRUPLE_BEAT));
 }

@@ -12,9 +12,6 @@
 
 #include "../util/colours.h"
 
-constexpr int CHAR_SLEEP_MS = 40;
-constexpr int WORD_SLEEP_MS = 300;
-
 void Verbs::drawFrame(const AnimationContext &context) {
     int rows, cols;
     context.getDimensions(rows, cols);
@@ -25,20 +22,18 @@ void Verbs::drawFrame(const AnimationContext &context) {
     std::shuffle(shuffledVerbs.begin(), shuffledVerbs.end(), context.rng);
 
     auto printWord = [&](const std::string &word) {
+        // Speed to print each character, dependant on length of the word
+        int charSleepMs = MS_PER_BEAT / word.length();
+
         // Calculate startX to center this word
         int wordStartX = cols / 2 - static_cast<int>(word.length()) / 2;
 
         for (size_t i = 0; i < word.length(); ++i) {
             mvwaddch(context.window, centerY, wordStartX + i, word[i]);
             wrefresh(context.window);
-            std::this_thread::sleep_for(
-                std::chrono::milliseconds(CHAR_SLEEP_MS));
+            std::this_thread::sleep_for(std::chrono::milliseconds(charSleepMs));
         }
-        // TODO: Change this so each word prints in the same time, so divive the
-        // time by word length.
-        // I guess the time to print and time to sleep could be the same, one
-        // beat?
-        std::this_thread::sleep_for(std::chrono::milliseconds(WORD_SLEEP_MS));
+        std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_BEAT));
     };
 
     for (const auto &word : shuffledVerbs) {
@@ -57,7 +52,7 @@ void Verbs::drawFrame(const AnimationContext &context) {
     printWord(polyphonic);
     wattroff(context.window, COLOR_PAIR(colorPair));
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(WORD_SLEEP_MS * 3));
+    std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_TRIPLE_BEAT));
 
     printWord("          ");
 

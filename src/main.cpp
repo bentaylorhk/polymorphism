@@ -62,15 +62,19 @@ void loop(AnimationContext &context) {
 
     while (true) {
         currentAnimation->run(context);
+
         // Track recent animations
         recentNames.push_back(currentAnimation->name());
-        if (recentNames.size() > RECENT_LIMIT)
+        if (recentNames.size() > RECENT_LIMIT) {
             recentNames.pop_front();
+        }
+
         // Sleep if ending on Blank
         if (currentAnimation->endState == TransitionState::Blank) {
             context.logger->debug(
                 "Sleeping for 1 second after blank transition.");
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(MS_PER_DOUBLE_BEAT));
         }
         currentAnimation = randomAnimation(currentAnimation->endState);
     }

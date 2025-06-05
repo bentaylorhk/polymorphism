@@ -9,7 +9,7 @@
 
 class DVD : public Animation {
    public:
-    DVD() : Animation(TransitionState::Blank, TransitionState::Blank) {
+    DVD() : Animation(TransitionState::Blank, TransitionState::Anything) {
     }
     const char *name() const override {
         return "dvd";

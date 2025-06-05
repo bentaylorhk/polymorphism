@@ -15,8 +15,6 @@
 #include "../util/colours.h"
 #include "../util/common.h"
 
-constexpr int DRAW_SPEED = 50;
-
 void ColouredCascade::drawFrame(const AnimationContext &context) {
     int winHeight, winWidth;
     context.getDimensions(winHeight, winWidth);
@@ -59,13 +57,14 @@ void ColouredCascade::drawFrame(const AnimationContext &context) {
                 mvwaddch(subwins[winIdx], row, i, polyphonic[i]);
             }
             wrefresh(subwins[winIdx]);
-            std::this_thread::sleep_for(std::chrono::milliseconds(DRAW_SPEED));
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(MS_PER_EIGHTH_BEAT));
         }
         wattroff(subwins[winIdx], COLOR_PAIR(colourPair));
     }
 
     // Wait before clearing
-    std::this_thread::sleep_for(std::chrono::seconds(3));
+    std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_OCTUPLE_BEAT));
 
     std::shuffle(winOrder.begin(), winOrder.end(), context.rng);
 
@@ -78,7 +77,8 @@ void ColouredCascade::drawFrame(const AnimationContext &context) {
                 mvwaddch(subwins[winIdx], row, i, ' ');
             }
             wrefresh(subwins[winIdx]);
-            std::this_thread::sleep_for(std::chrono::milliseconds(DRAW_SPEED));
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(MS_PER_EIGHTH_BEAT));
         }
     }
 

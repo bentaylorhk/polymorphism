@@ -10,8 +10,6 @@
 #include <random>
 #include <thread>
 
-constexpr int WIPE_SPEED = 83;
-
 void LineWipe::drawFrame(const AnimationContext &context) {
     int winHeight, winWidth;
     context.getDimensions(winHeight, winWidth);
@@ -29,14 +27,16 @@ void LineWipe::drawFrame(const AnimationContext &context) {
         for (int y = 0; y < winHeight; ++y) {
             writeLine(y, '=');
             wrefresh(context.window);
-            std::this_thread::sleep_for(std::chrono::milliseconds(WIPE_SPEED));
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(MS_PER_EIGHTH_BEAT));
             writeLine(y, ' ');
         }
     } else {
         for (int y = winHeight - 1; y >= 0; --y) {
             writeLine(y, '=');
             wrefresh(context.window);
-            std::this_thread::sleep_for(std::chrono::milliseconds(WIPE_SPEED));
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(MS_PER_EIGHTH_BEAT));
             writeLine(y, ' ');
         }
     }

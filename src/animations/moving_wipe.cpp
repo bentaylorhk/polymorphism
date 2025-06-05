@@ -10,8 +10,6 @@
 #include <thread>
 #include <vector>
 
-constexpr int MOVE_SPEED = 15;
-
 void MovingWipe::drawFrame(const AnimationContext &context) {
     int rows, cols;
     context.getDimensions(rows, cols);
@@ -78,10 +76,12 @@ void MovingWipe::drawFrame(const AnimationContext &context) {
                 if (tail > 0 && charIdx >= seqLen - tail)
                     mvwaddch(context.window, mappedY, mappedX, ' ');
                 else
-                    mvwaddch(context.window, mappedY, mappedX, fullSeq[charIdx]);
+                    mvwaddch(context.window, mappedY, mappedX,
+                             fullSeq[charIdx]);
             }
         }
         wrefresh(context.window);
-        std::this_thread::sleep_for(std::chrono::milliseconds(MOVE_SPEED));
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(MS_PER_THIRTY_SECOND_BEAT));
     }
 }

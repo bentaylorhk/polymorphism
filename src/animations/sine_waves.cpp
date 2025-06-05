@@ -13,8 +13,9 @@
 
 #include "../util/common.h"
 
-constexpr int LINE_WAIT_TIME = 25;
-constexpr int WAVE_WAIT_TIME = 50;
+constexpr int LINE_WAIT_TIME = MS_PER_SIXTEENTH_BEAT;
+constexpr int WAVE_WAIT_TIME = MS_PER_SIXTEENTH_BEAT;
+constexpr int PAUSE_TIME = MS_PER_DOUBLE_BEAT;
 
 void SineWaves::drawFrame(const AnimationContext &context) {
     werase(context.window);
@@ -22,7 +23,8 @@ void SineWaves::drawFrame(const AnimationContext &context) {
     int rows, cols;
     context.getDimensions(rows, cols);
 
-    int mid_row = rows / 2;
+    int mid_row = (rows / 2);
+
     double amplitude = rows * 0.4;               // 80% of screen height
     double frequency = 2.0 * M_PI / cols * 2.0;  // 2 full waves across screen
     static int phase = 0;
@@ -37,13 +39,12 @@ void SineWaves::drawFrame(const AnimationContext &context) {
     double phase2_rand = (context.rng() % 360) * M_PI / 180.0;  // 0 to 2pi
     double amp2_rand = 0.6 + (context.rng() % 20) * 0.02;       // 0.6 to 1.0
 
-    // Intro: animate '@' moving right to left across mid_row
     for (int x = cols - 1; x >= 0; --x) {
         mvwaddch(context.window, mid_row, x, '.');
         wrefresh(context.window);
         std::this_thread::sleep_for(std::chrono::milliseconds(LINE_WAIT_TIME));
     }
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(PAUSE_TIME));
 
     // Center the wave on the middle of the mid_row cell
     double mid_y = mid_row + 0.5;
@@ -110,14 +111,13 @@ void SineWaves::drawFrame(const AnimationContext &context) {
         phase = phase + 1;
     }
 
-    // Instantly draw the '@' character across the middle row
     werase(context.window);
     for (int x = 0; x < cols; ++x) {
         mvwaddch(context.window, mid_row, x, '.');
     }
     wrefresh(context.window);
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(PAUSE_TIME));
 
     for (int x = cols - 1; x >= 0; --x) {
         mvwaddch(context.window, mid_row, x, ' ');

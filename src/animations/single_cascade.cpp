@@ -12,6 +12,8 @@
 #include <random>
 #include <thread>
 
+constexpr int CASCADE_TIME = MS_PER_EIGHTH_BEAT;
+
 void SingleCascade::drawFrame(const AnimationContext &context) {
     int polyphonicLength = polyphonic.size();
 
@@ -52,11 +54,12 @@ void SingleCascade::drawFrame(const AnimationContext &context) {
                 mvwaddch(subwins[idx], eraseIdx, (col_width - 1) / 2, ' ');
             }
             wrefresh(subwins[idx]);
-            std::this_thread::sleep_for(std::chrono::milliseconds(83));
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(CASCADE_TIME));
         }
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(3500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_OCTUPLE_BEAT));
 
     std::shuffle(indices.begin(), indices.end(), context.rng);
 
@@ -71,7 +74,8 @@ void SingleCascade::drawFrame(const AnimationContext &context) {
                 mvwaddch(subwins[idx], eraseIdx, (col_width - 1) / 2, ' ');
             }
             wrefresh(subwins[idx]);
-            std::this_thread::sleep_for(std::chrono::milliseconds(83));
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(CASCADE_TIME));
         }
     }
 
@@ -79,7 +83,6 @@ void SingleCascade::drawFrame(const AnimationContext &context) {
         overwrite(w, paddedWindow);
         delwin(w);
     }
-    // Copy the final frame to the parent window before deleting paddedWindow
     overwrite(paddedWindow, context.window);
     delwin(paddedWindow);
 }

@@ -13,8 +13,6 @@ void DiagonalFillWipe::drawFrame(const AnimationContext &context) {
     int rows, cols;
     context.getDimensions(rows, cols);
 
-    int waitTime = 5;
-
     // Fill the window diagonally (top-left to bottom-right)
     int max_diagonal = rows + cols - 2;
     for (int d = 0; d <= max_diagonal; ++d) {
@@ -26,7 +24,8 @@ void DiagonalFillWipe::drawFrame(const AnimationContext &context) {
             }
         }
         wrefresh(context.window);
-        std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(MS_PER_SIXTY_FOURTH_BEAT));
     }
 
     // Wipe the window diagonally in the same way
@@ -38,6 +37,7 @@ void DiagonalFillWipe::drawFrame(const AnimationContext &context) {
             }
         }
         wrefresh(context.window);
-        std::this_thread::sleep_for(std::chrono::milliseconds(waitTime));
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(MS_PER_SIXTY_FOURTH_BEAT));
     }
 }

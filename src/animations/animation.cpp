@@ -13,21 +13,32 @@
 void Animation::run(const AnimationContext &context) {
     try {
         context.logger->info("Running animation: {}", name());
-        // Run the implementation with a timeout using std::async
+
+        auto start = std::chrono::steady_clock::now();
+
         auto fut = std::async(std::launch::async, [&]() {
             this->drawFrame(context);  // Call the subclass's implementation
         });
 
+        // Clearing screen if meant to start blank
+        if (startState == TransitionState::Blank) {
+            werase(context.window);
+            wrefresh(context.window);
+        }
+
         if (fut.wait_for(MAX_ANIMATION_DURATION) ==
             std::future_status::timeout) {
-            // mvwprintw(context.window, 0, 0, "Animation timed out!");
-            // wrefresh(context.window);
+            context.logger->error("Animation '{}' timed out!", name());
         } else {
-            // TODO: Maybe delete this on the day?
             fut.get();  // Re-throw exceptions if any
         }
 
-        context.logger->info("Animation '{}' completed", name());
+        auto end = std::chrono::steady_clock::now();
+        auto ms =
+            std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
+                .count();
+        context.logger->info("Animation '{}' completed in {} ms", name(), ms);
+
     } catch (const std::exception &e) {
         context.logger->error("Exception in animation '{}': {}", name(),
                               e.what());

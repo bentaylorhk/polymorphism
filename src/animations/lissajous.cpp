@@ -70,7 +70,8 @@ void Lissajous::drawFrame(const AnimationContext& context) {
             mvwaddch(context.window, py, px, intensityChars[idx]);
 
             wrefresh(context.window);
-            std::this_thread::sleep_for(std::chrono::milliseconds(8));
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(MS_PER_SIXTY_FOURTH_BEAT));
         }
 
         wattroff(context.window, COLOR_PAIR(curveCount));
@@ -78,5 +79,5 @@ void Lissajous::drawFrame(const AnimationContext& context) {
 
     // Hold at the end for a moment so the curve is visible
     wrefresh(context.window);
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_OCTUPLE_BEAT));
 }

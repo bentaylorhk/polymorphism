@@ -10,7 +10,7 @@
 #include <random>
 #include <thread>
 
-constexpr int WIPE_SPEED = 40;
+constexpr int WIPE_SPEED = MS_PER_SIXTEENTH_BEAT;
 
 void VerticalWipe::drawFrame(const AnimationContext &context) {
     int winHeight, winWidth;

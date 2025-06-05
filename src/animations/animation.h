@@ -15,7 +15,7 @@
 
 #include "../util/common.h"
 
-constexpr auto MAX_ANIMATION_DURATION = std::chrono::seconds(30);
+constexpr auto MAX_ANIMATION_DURATION = std::chrono::seconds(60);
 
 enum class TransitionState { Blank, Anything };
 

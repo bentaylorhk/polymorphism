@@ -66,6 +66,7 @@ void HypnoticWaves::drawFrame(const AnimationContext &context) {
             }
         }
         wrefresh(context.window);
-        std::this_thread::sleep_for(std::chrono::milliseconds(35));
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(MS_PER_SIXTEENTH_BEAT));
     }
 }

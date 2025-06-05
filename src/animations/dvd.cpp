@@ -30,7 +30,6 @@ void DVD::drawFrame(const AnimationContext &context) {
     int y = winHeight / 2;
     int dx = 1;
     int dy = 1;
-    int steps = 350;  // total bounces
 
     // 50/50 random inital directions
     std::bernoulli_distribution dist(0.5);
@@ -47,13 +46,11 @@ void DVD::drawFrame(const AnimationContext &context) {
         std::deque<std::pair<int, int>> trail;
     };
     int trailLength = GRADIENT_LENGTH;
-    int numPolys = 3;
     std::vector<Poly> polys;
     std::uniform_int_distribution<int> xDist(5, winWidth - wordLen - 5);
     std::uniform_int_distribution<int> yDist(5, winHeight - 1 - 5);
-    std::vector<Gradient> gradients =
-        getNUniqueGradients(context.rng, numPolys);
-    for (int i = 0; i < numPolys; ++i) {
+    std::vector<Gradient> gradients = getAllRandomGradients(context.rng);
+    for (int i = 0; i < gradients.size(); ++i) {
         Poly p;
         p.x = xDist(context.rng);
         p.y = yDist(context.rng);
@@ -64,11 +61,16 @@ void DVD::drawFrame(const AnimationContext &context) {
         polys.push_back(p);
     }
 
-    int polyStartDelays[] = {0, 20, 40};
+    // Dynamically set start delays for each poly
+    std::vector<int> polyStartDelays(polys.size());
+    for (size_t i = 0; i < polys.size(); ++i) {
+        polyStartDelays[i] = i * 50;
+    }
 
+    int steps = 500;  // total bounces
     for (int i = 0; i < steps; ++i) {
         werase(paddedWindow);
-        for (int pidx = 0; pidx < numPolys; ++pidx) {
+        for (int pidx = 0; pidx < polys.size(); ++pidx) {
             if (i < polyStartDelays[pidx])
                 continue;
             Poly &p = polys[pidx];
@@ -82,8 +84,9 @@ void DVD::drawFrame(const AnimationContext &context) {
             }
         }
         wrefresh(paddedWindow);
-        std::this_thread::sleep_for(std::chrono::milliseconds(WAIT_TIME / 4));
-        for (int pidx = 0; pidx < numPolys; ++pidx) {
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(MS_PER_EIGHTH_BEAT));
+        for (int pidx = 0; pidx < polys.size(); ++pidx) {
             if (i < polyStartDelays[pidx])
                 continue;
             Poly &p = polys[pidx];

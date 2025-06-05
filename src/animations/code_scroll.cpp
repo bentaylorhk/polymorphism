@@ -60,8 +60,9 @@ void CodeScroll::drawFrame(const AnimationContext& context) {
     auto scrollPrint = [&](const std::string& text) {
         scroll(context.window);
 
-        // Truncate to window width to disable wrapping
-        std::string displayText = text.substr(0, cols);
+        // Truncate to window width to disable wrapping, -1 to stop jittering
+        // for large text
+        std::string displayText = text.substr(0, cols - 1);
 
         // Case-insensitive search for "polyphonic"
         std::string lowerText = toLower(displayText);
@@ -91,7 +92,8 @@ void CodeScroll::drawFrame(const AnimationContext& context) {
         }
 
         wrefresh(context.window);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(MS_PER_EIGHTH_BEAT));
     };
 
     for (const auto& file : files) {
