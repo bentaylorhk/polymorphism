@@ -113,28 +113,29 @@ void Neofetch::drawFrame(const AnimationContext& context) {
             std::chrono::milliseconds(MS_PER_SIXTEENTH_BEAT));
     }
 
-    // Animate info text, one line at a time
-    for (size_t i = 0; i < info_lines.size() && (top_pad + (int)i) < winHeight;
+    // Animate info text, one character at a time with cursor enabled
+    curs_set(TRUE);
+    int info_y = top_pad;
+    int info_x = info_col_start;
+    std::uniform_int_distribution<int> typing_delay(MS_PER_SIXTY_FOURTH_BEAT,
+                                                    MS_PER_SIXTEENTH_BEAT);
+    for (size_t i = 0; i < info_lines.size() && (info_y + (int)i) < winHeight;
          ++i) {
-        mvwprintw(context.window, art_top_pad, left_pad, "%s",
-                  art_lines[0].c_str());
-        for (size_t j = 1;
-             j < art_lines.size() && (art_top_pad + (int)j) < winHeight; ++j) {
-            mvwprintw(context.window, art_top_pad + j, left_pad, "%s",
-                      art_lines[j].c_str());
+        int line_y = info_y + i;
+        int line_x = info_x;
+        const std::string& line = info_lines[i];
+        for (size_t c = 0; c < line.size(); ++c) {
+            mvwaddch(context.window, line_y, line_x + c, line[c]);
+            wmove(context.window, line_y, line_x + c + 1);
+            wrefresh(context.window);
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(typing_delay(context.rng)));
         }
-        for (size_t j = 0; j <= i; ++j) {
-            mvwprintw(context.window, top_pad + j, info_col_start, "%s",
-                      info_lines[j].c_str());
-        }
-        wrefresh(context.window);
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(MS_PER_EIGHTH_BEAT));
     }
-
+    curs_set(FALSE);
     std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_DOUBLE_BEAT));
 
-    // Animate gradient bars from left to right
+    // Animate gradient bars from left to right (fade in)
     constexpr int COLOUR_BAR_WIDTH = 6;
     auto random_gradients = getAllRandomGradients(context.rng);
     int grad_y = winHeight - (int)random_gradients.size() - 1;
@@ -154,6 +155,21 @@ void Neofetch::drawFrame(const AnimationContext& context) {
         std::this_thread::sleep_for(
             std::chrono::milliseconds(MS_PER_THIRTY_SECOND_BEAT));
     }
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(MS_PER_QUADRUPLE_BEAT));
+
+    // Fade out gradient bars from left to right (same as fade in, but blank)
+    for (int col = 0; col < GRADIENT_LENGTH * COLOUR_BAR_WIDTH; ++col) {
+        for (size_t g = 0; g < random_gradients.size(); ++g) {
+            int grad_idx = col / COLOUR_BAR_WIDTH;
+            if (grad_idx >= GRADIENT_LENGTH)
+                continue;
+            mvwaddch(context.window, grad_y + g, grad_x + col, ' ');
+        }
+        wrefresh(context.window);
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(MS_PER_THIRTY_SECOND_BEAT));
+    }
     wrefresh(context.window);
-    std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_OCTUPLE_BEAT));
+    std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_BEAT));
 }
