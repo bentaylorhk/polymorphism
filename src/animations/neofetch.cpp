@@ -12,9 +12,9 @@
 #include <vector>
 
 #include "../util/colours.h"
+#include "../util/common.h"
 
-constexpr const char* ASCII_ART = R"(
-    P   O   L   Y
+constexpr const char* ASCII_ART = R"(    P   O   L   Y
 
   .g8""8q.   .M"""bgd
 .dP'    `YM.,MI    "Y
@@ -32,8 +32,8 @@ OS - polyOS
 Kernel - 6.14.9-arch1-1
 Packages - 770 (pacman)
 Shell - /bin/bash 5.2.37
+Display - Sony PVM-14L5
 Resolution - 320x240 @ 60.08Hz
-WM - i3
 Font - scientifica
 CPU - AMD Ryzen 5 8500G @ 5GHz
 GPU - AMD Radeon HD 8490
@@ -51,10 +51,12 @@ void Neofetch::drawFrame(const AnimationContext& context) {
         std::istringstream art_stream(ASCII_ART);
         std::string line;
         while (std::getline(art_stream, line)) {
-            // Remove possible leading/trailing whitespace
-            if (!line.empty() &&
-                (line.find_first_not_of(" \t\n\r") != std::string::npos))
+            // Only skip lines that are *completely* whitespace
+            if (line.find_first_not_of(" \t\n\r") == std::string::npos) {
+                art_lines.push_back("");  // preserve blank line
+            } else {
                 art_lines.push_back(line);
+            }
         }
     }
     {
@@ -67,11 +69,20 @@ void Neofetch::drawFrame(const AnimationContext& context) {
         }
     }
 
+    // Calculate dimensions for layout
+    int art_width = 0, art_height = 0;
+    getStringDimensions(ASCII_ART, art_width, art_height);
+    int info_width = 0, info_height = 0;
+    getStringDimensions(INFO_TEXT, info_width, info_height);
+
+    // Padding and layout variables
     int left_pad = 2;
-    int art_col_width = 22;
-    int info_col_start = art_col_width + 4;
     int top_pad = 1;
-    int art_top_pad = top_pad + 5;
+    int art_col_width = art_width + 2;  // 2 for a little extra space
+    int info_col_start =
+        left_pad + art_col_width + 1;  // 2 for gap between art and info
+    // Center art vertically in the window
+    int art_top_pad = ((winHeight - art_height) / 2) + top_pad;
 
     // Print ASCII art
     for (size_t i = 0;
