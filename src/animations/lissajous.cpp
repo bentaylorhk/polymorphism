@@ -13,6 +13,7 @@
 #include <random>
 #include <thread>
 
+#include "../util/colours.h"
 #include "../util/common.h"
 
 void Lissajous::drawFrame(const AnimationContext& context) {
@@ -33,6 +34,8 @@ void Lissajous::drawFrame(const AnimationContext& context) {
     // Number of steps for smoothness (higher = smoother)
     int steps = 1000;
 
+    Gradient gradient = getRandomGradient(context.rng);
+
     for (int curveCount = 0; curveCount < 3; curveCount++) {
         // Random frequencies for each curve
         int a = freq_dist(context.rng);
@@ -45,7 +48,21 @@ void Lissajous::drawFrame(const AnimationContext& context) {
             std::ceil(period / (2 * M_PI) * steps);  // Steps for just one cycle
         double dt = period / curveSteps;
 
-        wattron(context.window, COLOR_PAIR(curveCount));
+        // Progress from white, light gradient colour, strongest gradient
+        // colour.
+        int colourIndex;
+        switch (curveCount) {
+            case 0:
+                colourIndex = 0;
+                break;
+            case 1:
+                colourIndex = getColourIndex(gradient, GRADIENT_LENGTH - 1);
+                break;
+            default:
+                colourIndex = getColourIndex(gradient, 0);
+        }
+
+        wattron(context.window, COLOR_PAIR(colourIndex));
 
         for (int i = 0; i <= curveSteps; i++) {
             double t = i * dt;
@@ -74,7 +91,7 @@ void Lissajous::drawFrame(const AnimationContext& context) {
                 std::chrono::milliseconds(MS_PER_SIXTY_FOURTH_BEAT));
         }
 
-        wattroff(context.window, COLOR_PAIR(curveCount));
+        wattroff(context.window, COLOR_PAIR(colourIndex));
     }
 
     // Hold at the end for a moment so the curve is visible

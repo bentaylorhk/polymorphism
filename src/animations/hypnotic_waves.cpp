@@ -14,8 +14,7 @@
 
 #include "../util/common.h"
 
-// const std::vector<char> otherChars = {' ', 'p', 'o', 'l', 'y', 'P',
-//                                       'H', 'O', 'N', 'I', 'C'};
+constexpr int FRAME_COUNT = 1500;
 
 const std::vector<char> otherChars = {
     ' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
@@ -25,16 +24,15 @@ const std::vector<char> otherChars = {
 void HypnoticWaves::drawFrame(const AnimationContext &context) {
     int winHeight, winWidth;
     context.getDimensions(winHeight, winWidth);
-    int frames = 1200;
     float t = 0.0f;
     float dt = 0.09f;
     float freq1 = 0.13f, freq2 = 0.09f, freq3 = 0.07f;
     float amp1 = 1.7f, amp2 = 1.2f, amp3 = 0.8f;
 
-    for (int frame = 0; frame < frames; ++frame, t += dt) {
+    for (int frame = 0; frame < FRAME_COUNT; ++frame, t += dt) {
         // TODO: Maybe put this into common?
         // Calculate progress for easing
-        float progress = static_cast<float>(frame) / (frames - 1);
+        float progress = static_cast<float>(frame) / (FRAME_COUNT - 1);
         float ease = 1.0f;
         if (progress < 0.15f) {
             ease = easeInOutQuad(progress / 0.15f);  // Fade in

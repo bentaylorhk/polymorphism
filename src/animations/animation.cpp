@@ -34,10 +34,9 @@ void Animation::run(const AnimationContext &context) {
         }
 
         auto end = std::chrono::steady_clock::now();
-        auto ms =
-            std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
-                .count();
-        context.logger->info("Animation '{}' completed in {} ms", name(), ms);
+        std::chrono::duration<double> sec = end - start;
+        context.logger->info("Animation '{}' completed in {:.3f} s", name(),
+                             sec.count());
 
     } catch (const std::exception &e) {
         context.logger->error("Exception in animation '{}': {}", name(),

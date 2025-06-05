@@ -17,6 +17,8 @@ constexpr int LINE_WAIT_TIME = MS_PER_SIXTEENTH_BEAT;
 constexpr int WAVE_WAIT_TIME = MS_PER_SIXTEENTH_BEAT;
 constexpr int PAUSE_TIME = MS_PER_DOUBLE_BEAT;
 
+constexpr int FRAME_COUNT = 1250;
+
 void SineWaves::drawFrame(const AnimationContext &context) {
     werase(context.window);
 
@@ -29,8 +31,7 @@ void SineWaves::drawFrame(const AnimationContext &context) {
     double frequency = 2.0 * M_PI / cols * 2.0;  // 2 full waves across screen
     static int phase = 0;
 
-    int substeps = 6;   // More detail per column
-    int frames = 1000;  // Number of frames for a full cycle
+    int substeps = 6;  // More detail per column
 
     // Add randomness to sine wave parameters
     double freq1_rand = 1.0 + (context.rng() % 15) * 0.01;      // 1.00 to 1.14
@@ -50,13 +51,14 @@ void SineWaves::drawFrame(const AnimationContext &context) {
     double mid_y = mid_row + 0.5;
 
     // Sine wave animation
-    for (int frame = 0; frame < frames; ++frame) {
+    for (int frame = 0; frame < FRAME_COUNT; ++frame) {
         // Calculate ease value for amplitude envelope
         double ease = 1.0;
-        if (frame < frames * 0.1) {
-            ease = easeInOutQuad((double)frame / (frames * 0.1));
-        } else if (frame > frames * 0.9) {
-            ease = easeInOutQuad((double)(frames - frame) / (frames * 0.1));
+        if (frame < FRAME_COUNT * 0.1) {
+            ease = easeInOutQuad((double)frame / (FRAME_COUNT * 0.1));
+        } else if (frame > FRAME_COUNT * 0.9) {
+            ease = easeInOutQuad((double)(FRAME_COUNT - frame) /
+                                 (FRAME_COUNT * 0.1));
         }
         werase(context.window);
         for (int x = 0; x < cols; ++x) {
