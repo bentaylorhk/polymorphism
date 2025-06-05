@@ -9,7 +9,7 @@
 class ColourPreview : public Animation {
    public:
     ColourPreview()
-        : Animation(TransitionState::Blank, TransitionState::Blank) {
+        : Animation(TransitionState::Blank, TransitionState::Anything) {
     }
 
     const char *name() const override {
