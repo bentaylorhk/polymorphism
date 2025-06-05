@@ -36,6 +36,7 @@ void Verbs::drawFrame(const AnimationContext &context) {
         std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_BEAT));
     };
 
+    curs_set(TRUE);
     for (const auto &word : shuffledVerbs) {
         printWord(word);
 
@@ -54,6 +55,7 @@ void Verbs::drawFrame(const AnimationContext &context) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_DOUBLE_BEAT));
 
+    curs_set(FALSE);
     printWord("          ");
 
     wrefresh(context.window);

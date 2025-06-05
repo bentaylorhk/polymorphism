@@ -14,6 +14,8 @@ void Animation::run(const AnimationContext &context) {
     try {
         context.logger->info("Running animation: {}", name());
 
+        curs_set(FALSE);
+
         auto start = std::chrono::steady_clock::now();
 
         auto fut = std::async(std::launch::async, [&]() {
