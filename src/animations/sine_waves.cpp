@@ -34,11 +34,18 @@ void SineWaves::drawFrame(const AnimationContext &context) {
     int substeps = 6;  // More detail per column
 
     // Add randomness to sine wave parameters
-    double freq1_rand = 1.0 + (context.rng() % 15) * 0.01;      // 1.00 to 1.14
-    double freq2_rand = 1.07 + (context.rng() % 15) * 0.01;     // 1.07 to 1.21
-    double phase1_rand = (context.rng() % 360) * M_PI / 180.0;  // 0 to 2pi
-    double phase2_rand = (context.rng() % 360) * M_PI / 180.0;  // 0 to 2pi
-    double amp2_rand = 0.6 + (context.rng() % 20) * 0.02;       // 0.6 to 1.0
+    double freq1_rand = 0.85 + (context.rng() % 30) * 0.01;  // 0.85 to 1.14
+    double freq2_rand = 1.25 + (context.rng() % 30) * 0.01;  // 1.25 to 1.54
+    double freq3_rand = 0.55 + (context.rng() % 30) * 0.01;  // 0.55 to 0.84
+    // Slow down phase changes for less rapid variation
+    double phase1_rand =
+        ((context.rng() % 360) * M_PI / 180.0) / 2.0;  // 0 to pi
+    double phase2_rand = (((context.rng() % 360) + 120) * M_PI / 180.0) /
+                         2.0;  // offset by 120deg, slower
+    double phase3_rand = (((context.rng() % 360) + 240) * M_PI / 180.0) /
+                         2.0;  // offset by 240deg, slower
+    double amp2_rand = 0.5 + (context.rng() % 30) * 0.02;  // 0.5 to 1.08
+    double amp3_rand = 0.3 + (context.rng() % 30) * 0.02;  // 0.3 to 0.88
 
     for (int x = cols - 1; x >= 0; --x) {
         mvwaddch(context.window, mid_row, x, '.');
@@ -66,27 +73,31 @@ void SineWaves::drawFrame(const AnimationContext &context) {
             int max_idx[rows];
             for (int i = 0; i < rows; ++i)
                 max_idx[i] = -1;
-            // Calculate the maximum possible amplitude for the sum of the two
-            // waves The max sum is amplitude + amplitude * 0.7 = amplitude
-            // * 1.7
+            // Calculate the maximum possible amplitude for the sum of the three
+            // waves The max sum is amplitude + amplitude * amp2_rand +
+            // amplitude * amp3_rand
             double combined_amplitude =
                 (rows * 0.4 * ease) /
-                (1.0 + amp2_rand);  // scale so max sum fits screen
+                (1.0 + amp2_rand + amp3_rand);  // scale so max sum fits screen
             double amplitude1 = combined_amplitude;
             double amplitude2 = combined_amplitude * amp2_rand;
+            double amplitude3 = combined_amplitude * amp3_rand;
             for (int sub = 0; sub < substeps; ++sub) {
                 double fx = x + (double)sub / substeps;
-                // First sine wave with randomness
+                // First sine wave
                 double y1 = amplitude1 *
                             std::sin(frequency * freq1_rand * (fx + phase) +
                                      phase1_rand);
-                // Second sine wave: slightly different frequency and phase
-                // offset, with randomness
+                // Second sine wave: more different frequency and phase
                 double y2 = amplitude2 * std::sin(frequency * freq2_rand *
-                                                      (fx + phase * 1.13 + 17) +
+                                                      (fx + phase * 1.37 + 31) +
                                                   phase2_rand);
-                // Combine the two
-                double y = y1 + y2;
+                // Third sine wave: even more different frequency and phase
+                double y3 = amplitude3 * std::sin(frequency * freq3_rand *
+                                                      (fx + phase * 0.51 - 23) +
+                                                  phase3_rand);
+                // Combine the three
+                double y = y1 + y2 + y3;
                 double fy = mid_y + y;
                 int draw_y = static_cast<int>(fy);
                 if (draw_y >= 0 && draw_y < rows) {
