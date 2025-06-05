@@ -61,7 +61,11 @@ void MovingWipe::drawFrame(const AnimationContext &context) {
     };
 
     // Extend the main loop to include the trailing blank wipe
+    constexpr int TARGET_FPS = 60;
+    constexpr auto FRAME_DURATION =
+        std::chrono::microseconds(1000000 / TARGET_FPS);
     for (int shift = 0; shift <= maxShift + seqLen; ++shift) {
+        auto frameStart = std::chrono::steady_clock::now();
         int tail = (shift > maxShift) ? (shift - maxShift) : 0;
         for (int y = 0; y < rows; ++y) {
             int edgeX = shift - 2 * y;
@@ -81,7 +85,11 @@ void MovingWipe::drawFrame(const AnimationContext &context) {
             }
         }
         wrefresh(context.window);
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(MS_PER_THIRTY_SECOND_BEAT));
+        auto frameEnd = std::chrono::steady_clock::now();
+        auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(
+            frameEnd - frameStart);
+        auto sleepTime = FRAME_DURATION - elapsed;
+        if (sleepTime.count() > 0)
+            std::this_thread::sleep_for(sleepTime);
     }
 }
