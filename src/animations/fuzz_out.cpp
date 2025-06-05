@@ -11,7 +11,7 @@
 #include <thread>
 #include <vector>
 
-#include "../common.h"
+#include "../util/common.h"
 
 void FuzzOut::drawFrame(const AnimationContext &context) {
     std::vector<std::pair<int, int>> filledCells =

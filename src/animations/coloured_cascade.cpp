@@ -12,8 +12,8 @@
 #include <string>
 #include <thread>
 
-#include "../common.h"
 #include "../util/colours.h"
+#include "../util/common.h"
 
 constexpr int DRAW_SPEED = 50;
 

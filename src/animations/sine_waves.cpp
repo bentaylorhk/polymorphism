@@ -11,7 +11,7 @@
 #include <cmath>
 #include <thread>
 
-#include "../common.h"
+#include "../util/common.h"
 
 constexpr int LINE_WAIT_TIME = 25;
 constexpr int WAVE_WAIT_TIME = 50;

@@ -13,7 +13,7 @@
 #include <random>
 #include <thread>
 
-#include "../common.h"
+#include "../util/common.h"
 
 void Lissajous::drawFrame(const AnimationContext& context) {
     wclear(context.window);

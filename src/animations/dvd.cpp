@@ -12,8 +12,8 @@
 #include <random>
 #include <thread>
 
-#include "../common.h"
 #include "../util/colours.h"
+#include "../util/common.h"
 
 void DVD::drawFrame(const AnimationContext &context) {
     int outerWinHeight, winWidth;

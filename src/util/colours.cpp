@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <random>
 
+#include "common.h"
+
 void setupColours() {
     start_color();
     if (!has_colors()) {

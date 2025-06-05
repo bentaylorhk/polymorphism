@@ -10,6 +10,7 @@
 #include <memory>
 #include <vector>
 
+#include "../util/common.h"
 #include "char_fill.h"
 #include "code_scroll.h"
 #include "coloured_cascade.h"

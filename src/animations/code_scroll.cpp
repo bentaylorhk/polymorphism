@@ -34,6 +34,20 @@ void CodeScroll::drawFrame(const AnimationContext& context) {
     wclear(context.window);
 
     auto files = findFiles(context.sourceDir);
+
+    // Only keep the specific files
+    const std::vector<std::string> allowed = {"common.h", "common.cpp",
+                                              "main.cpp", "sine_waves.cpp"};
+    files.erase(
+        std::remove_if(files.begin(), files.end(),
+                       [&](const std::string& path) {
+                           std::string name =
+                               std::filesystem::path(path).filename().string();
+                           return std::find(allowed.begin(), allowed.end(),
+                                            name) == allowed.end();
+                       }),
+        files.end());
+
     if (files.empty()) {
         return;  // No files to scroll through
     }

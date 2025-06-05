@@ -9,8 +9,8 @@
 
 #include <thread>
 
-#include "../common.h"
 #include "../util/colours.h"
+#include "../util/common.h"
 
 void CharFill::drawFrame(const AnimationContext &context) {
     wclear(context.window);

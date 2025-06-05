@@ -18,8 +18,8 @@
 #include <vector>
 
 #include "animations/animations.h"
-#include "common.h"
 #include "util/colours.h"
+#include "util/common.h"
 
 constexpr int PADDING_TOP = 1;
 constexpr int PADDING_BOTTOM = 0;

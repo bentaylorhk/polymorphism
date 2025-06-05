@@ -13,7 +13,7 @@
 #include <random>
 #include <string>
 
-#include "../common.h"
+#include "../util/common.h"
 
 constexpr auto MAX_ANIMATION_DURATION = std::chrono::seconds(30);
 

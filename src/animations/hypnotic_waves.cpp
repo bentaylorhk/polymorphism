@@ -12,7 +12,7 @@
 #include <thread>
 #include <vector>
 
-#include "../common.h"
+#include "../util/common.h"
 
 // const std::vector<char> otherChars = {' ', 'p', 'o', 'l', 'y', 'P',
 //                                       'H', 'O', 'N', 'I', 'C'};
