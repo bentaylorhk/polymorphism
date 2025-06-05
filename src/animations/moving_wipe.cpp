@@ -64,24 +64,47 @@ void MovingWipe::drawFrame(const AnimationContext &context) {
     constexpr int TARGET_FPS = 60;
     constexpr auto FRAME_DURATION =
         std::chrono::microseconds(1000000 / TARGET_FPS);
+    // Track which cells have been cleared
+    std::vector<std::vector<bool>> cleared(rows,
+                                           std::vector<bool>(cols, false));
+    // For the clear wipe, process diagonals in the correct order for the chosen
+    // corner We'll do the clear wipe only when tail > 0, and only for cells
+    // that have not been cleared
     for (int shift = 0; shift <= maxShift + seqLen; ++shift) {
         auto frameStart = std::chrono::steady_clock::now();
         int tail = (shift > maxShift) ? (shift - maxShift) : 0;
+        // For each frame, draw the moving wipe as before
         for (int y = 0; y < rows; ++y) {
             int edgeX = shift - 2 * y;
             if (edgeX < 0)
-                continue;  // Triangle not yet reached this row
+                continue;
             for (int x = 0; x < cols; ++x) {
                 if (x > edgeX)
-                    continue;  // Outside the triangle
-                int charIdx = edgeX - x + shift;
-                charIdx = charIdx % seqLen;  // Wrap around
+                    continue;
                 auto [mappedY, mappedX] = mapYX(y, x);
-                if (tail > 0 && charIdx >= seqLen - tail)
-                    mvwaddch(context.window, mappedY, mappedX, ' ');
-                else
+                if (cleared[mappedY][mappedX])
+                    continue;
+                int charIdx = edgeX - x + shift;
+                charIdx = charIdx % seqLen;
+                if (!(tail > 0 && charIdx >= seqLen - tail)) {
                     mvwaddch(context.window, mappedY, mappedX,
                              fullSeq[charIdx]);
+                }
+            }
+        }
+        // Now, if tail > 0, do the clear wipe, one diagonal per frame
+        if (tail > 0) {
+            int clearDiag = tail - 1;  // Start at 0, increase each frame
+            // For each diagonal, clear all cells on that diagonal
+            for (int y = 0; y < rows; ++y) {
+                int x = clearDiag - y;
+                if (x < 0 || x >= cols)
+                    continue;
+                auto [mappedY, mappedX] = mapYX(y, x);
+                if (!cleared[mappedY][mappedX]) {
+                    mvwaddch(context.window, mappedY, mappedX, ' ');
+                    cleared[mappedY][mappedX] = true;
+                }
             }
         }
         wrefresh(context.window);
