@@ -7,6 +7,7 @@
 
 #include <ncurses.h>
 
+#include <algorithm>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -78,12 +79,11 @@ void Neofetch::drawFrame(const AnimationContext& context) {
 
     // Padding and layout variables
     int left_pad = 2;
-    int top_pad = 1;
     int art_col_width = art_width + 2;  // 2 for a little extra space
     int info_col_start =
         left_pad + art_col_width + 1;  // 2 for gap between art and info
     // Center art vertically in the window
-    int art_top_pad = ((winHeight - art_height) / 2) + top_pad;
+    int art_top_pad = (winHeight - art_height) / 2;
 
     // Print ASCII art
     for (size_t i = 0;
@@ -92,9 +92,8 @@ void Neofetch::drawFrame(const AnimationContext& context) {
                   art_lines[i].c_str());
     }
     // Print info text
-    for (size_t i = 0; i < info_lines.size() && (top_pad + (int)i) < winHeight;
-         ++i) {
-        mvwprintw(context.window, top_pad + i, info_col_start, "%s",
+    for (size_t i = 0; i < info_lines.size() && (int)i < winHeight; ++i) {
+        mvwprintw(context.window, i, info_col_start, "%s",
                   info_lines[i].c_str());
     }
 
@@ -116,14 +115,12 @@ void Neofetch::drawFrame(const AnimationContext& context) {
 
     // Animate info text, one character at a time with cursor enabled
     curs_set(TRUE);
-    int info_y = top_pad;
     int info_x = info_col_start;
     // Lower lambda = more variance, higher chance of long pauses
     std::exponential_distribution<double> typing_delay_dist(
         1.0 / 20.0);  // mean ~6ms, but more long tails
-    for (size_t i = 0; i < info_lines.size() && (info_y + (int)i) < winHeight;
-         ++i) {
-        int line_y = info_y + i;
+    for (size_t i = 0; i < info_lines.size() && (int)i < winHeight; ++i) {
+        int line_y = i;
         int line_x = info_x;
         const std::string& line = info_lines[i];
         for (size_t c = 0; c < line.size(); ++c) {

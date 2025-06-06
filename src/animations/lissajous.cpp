@@ -26,7 +26,7 @@ void Lissajous::drawFrame(const AnimationContext& context) {
 
     // Center and radii
     double cx = cols / 2.0;
-    double cy = rows / 2.0;
+    double cy = (rows / 2.0) - 0.5;
     double rx = (cols - 2) / 2.0 * 0.9;  // Leave margin, scale for aspect
     double ry =
         (rows - 2) / 2.0 * 0.9;  // Height scaling for typical terminal aspect

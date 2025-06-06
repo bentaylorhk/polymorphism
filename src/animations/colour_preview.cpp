@@ -11,7 +11,9 @@
 #include <thread>
 
 #include "../util/colours.h"
-#include "../util/common.h"  // for intensityChars, easeInOutQuad
+#include "../util/common.h"
+
+const std::vector<char> PREVIEW_CHARS = {'=', 'x', '*', '#', 'X', '$', '@'};
 
 void ColourPreview::drawFrame(const AnimationContext &context) {
     int winHeight, winWidth;
@@ -24,8 +26,9 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
 
     auto gradients = getAllRandomGradients(context.rng);
     int N = gradients.size();
-    int sectionHeight = winHeight / N;
-    int remainder = winHeight % N;
+    int sectionHeight = 3;  // Each gradient row is 3 cells tall
+    int totalGradientRows =
+        N * sectionHeight + (N - 1);  // (N-1) empty rows between
     int yStart = 0;
     bool leftToRight = true;
 
@@ -50,36 +53,40 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
         }
     };
 
-    // Lambda to draw POLYPHONIC at the center row, only on blank cells or
-    // always on last frame
-    auto drawPolyphonic = [&](int row, int xStart, int winWidth,
-                              Gradient gradient, bool always) {
+    // Lambda to draw POLYPHONIC across the entire row, repeating as needed
+    auto drawPolyphonic = [&](int row, int winWidth, Gradient gradient,
+                              bool always) {
         int wordLen = polyphonic.size();
-        for (int i = 0; i < wordLen && (xStart + i) < winWidth; ++i) {
-            int gradIdx = (i * GRADIENT_LENGTH) / wordLen;
+        for (int i = 0; i < winWidth; ++i) {
+            int gradIdx = (i * GRADIENT_LENGTH) / winWidth;
             if (gradIdx >= GRADIENT_LENGTH)
                 gradIdx = GRADIENT_LENGTH - 1;
             int colourPair = getColourIndex(gradient, gradIdx);
             // Only draw if always==true (last frame) or if char is blank
-            chtype ch = mvwinch(context.window, row, xStart + i);
-            if (always || (ch & A_CHARTEXT) == ' ') {
+            chtype ch = mvwinch(context.window, row, i);
+            if (always || (ch & A_CHARTEXT) == '=') {
                 wattron(context.window, COLOR_PAIR(colourPair));
-                mvwaddch(context.window, row, xStart + i, polyphonic[i]);
+                mvwaddch(context.window, row, i, polyphonic[i % wordLen]);
                 wattroff(context.window, COLOR_PAIR(colourPair));
             }
         }
     };
 
-    // 1. Fill each section with '.' (each section fills only its band)
     yStart = 0;
     for (int idx = 0; idx < N; ++idx) {
-        int thisSectionHeight = sectionHeight + (idx < remainder ? 1 : 0);
         int ySectionStart = yStart;
-        int ySectionEnd = yStart + thisSectionHeight;
+        int ySectionEnd = yStart + sectionHeight;
         Gradient gradient = gradients[idx];
-        fillSection(ySectionStart, ySectionEnd, gradient, leftToRight, '.');
+        fillSection(ySectionStart, ySectionEnd, gradient, leftToRight,
+                    PREVIEW_CHARS[0]);
         leftToRight = !leftToRight;
-        yStart += thisSectionHeight;
+        yStart += sectionHeight;
+        // Add a single empty row between gradient rows, except after the last
+        if (idx < N - 1 && yStart < winHeight) {
+            for (int col = 0; col < winWidth; ++col)
+                mvwaddch(context.window, yStart, col, ' ');
+            ++yStart;
+        }
     }
     wrefresh(context.window);
     std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_DOUBLE_BEAT));
@@ -87,7 +94,7 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
     // 2. Animate all cells to randomly increase to a peak intensity char (all
     // sections at once, each fills only its band)
     int upFrames = 75;
-    yStart = 0;
+    // We'll need to skip the empty rows in all animation loops
     for (int frame = 0; frame <= upFrames; ++frame) {
         float progress = (float)frame / upFrames;
         float intensity;
@@ -99,9 +106,8 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
         }
         yStart = 0;
         for (int idx = 0; idx < N; ++idx) {
-            int thisSectionHeight = sectionHeight + (idx < remainder ? 1 : 0);
             int ySectionStart = yStart;
-            int ySectionEnd = yStart + thisSectionHeight;
+            int ySectionEnd = yStart + sectionHeight;
             Gradient gradient = gradients[idx];
             for (int row = ySectionStart; row < ySectionEnd && row < winHeight;
                  ++row) {
@@ -111,7 +117,7 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
                         gradIdx = GRADIENT_LENGTH - 1;
                     int colourPair = getColourIndex(gradient, gradIdx);
                     int maxIdx =
-                        std::round(intensity * (intensityChars.size() - 1));
+                        std::round(intensity * (PREVIEW_CHARS.size() - 1));
                     int idxNow = 0;
                     if (maxIdx == 0) {
                         idxNow = 0;  // always .
@@ -120,11 +126,14 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
                         idxNow = dist(context.rng);
                     }
                     wattron(context.window, COLOR_PAIR(colourPair));
-                    mvwaddch(context.window, row, col, intensityChars[idxNow]);
+                    mvwaddch(context.window, row, col, PREVIEW_CHARS[idxNow]);
                     wattroff(context.window, COLOR_PAIR(colourPair));
                 }
             }
-            yStart += thisSectionHeight;
+            yStart += sectionHeight;
+            // Skip the empty row
+            if (idx < N - 1 && yStart < winHeight)
+                ++yStart;
         }
         wrefresh(context.window);
         std::this_thread::sleep_for(
@@ -139,30 +148,19 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
         float intensity = 1.0f - easeInOutQuad((float)frame / downFrames);
         yStart = 0;
         for (int idx = 0; idx < N; ++idx) {
-            int thisSectionHeight = sectionHeight + (idx < remainder ? 1 : 0);
             int ySectionStart = yStart;
-            int ySectionEnd = yStart + thisSectionHeight;
+            int ySectionEnd = yStart + sectionHeight;
             Gradient gradient = gradients[idx];
-            int xStart = (winWidth - wordLen) / 2;
-            int yMid = ySectionStart + thisSectionHeight / 2;
+            int yMid = ySectionStart + sectionHeight / 2;
             for (int row = ySectionStart; row < ySectionEnd && row < winHeight;
                  ++row) {
                 for (int col = 0; col < winWidth; ++col) {
-                    // Only draw POLYPHONIC after the cell is blank, or always
-                    // on last frame
-                    /*
-                    bool isPolyphonic = (row == yMid && col >= xStart &&
-                                         col < xStart + wordLen);
-                    if (isPolyphonic) {
-                        continue;  // We'll draw POLYPHONIC after the row loop
-                    }
-                        */
                     int gradIdx = (col * GRADIENT_LENGTH) / winWidth;
                     if (gradIdx >= GRADIENT_LENGTH)
                         gradIdx = GRADIENT_LENGTH - 1;
                     int colourPair = getColourIndex(gradient, gradIdx);
-                    int maxIdx = std::round(intensity *
-                                            (blankedIntensityChars.size() - 1));
+                    int maxIdx =
+                        std::round(intensity * (PREVIEW_CHARS.size() - 1));
                     int idxNow = 0;
                     if (frame == downFrames) {
                         idxNow = 0;  // blank
@@ -172,20 +170,22 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
                         std::uniform_int_distribution<int> dist(0, maxIdx);
                         idxNow = dist(context.rng);
                     }
-                    char c = (frame == downFrames)
-                                 ? ' '
-                                 : blankedIntensityChars[idxNow];
+                    char c =
+                        (frame == downFrames) ? '=' : PREVIEW_CHARS[idxNow];
                     wattron(context.window, COLOR_PAIR(colourPair));
                     mvwaddch(context.window, row, col, c);
                     wattroff(context.window, COLOR_PAIR(colourPair));
                 }
                 // Draw POLYPHONIC on this row if needed
                 if (row == yMid) {
-                    drawPolyphonic(row, xStart, winWidth, gradient,
+                    drawPolyphonic(row, winWidth, gradient,
                                    frame == downFrames);
                 }
             }
-            yStart += thisSectionHeight;
+            yStart += sectionHeight;
+            // Skip the empty row
+            if (idx < N - 1 && yStart < winHeight)
+                ++yStart;
         }
         wrefresh(context.window);
         std::this_thread::sleep_for(

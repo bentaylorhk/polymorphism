@@ -10,7 +10,6 @@
 #include <deque>
 #include <map>
 #include <memory>
-#include <optional>
 #include <random>
 #include <string>
 #include <thread>
@@ -20,7 +19,7 @@
 #include "util/colours.h"
 #include "util/common.h"
 
-constexpr int PADDING_TOP = 1;
+constexpr int PADDING_TOP = 2;
 constexpr int PADDING_BOTTOM = 0;
 constexpr int PADDING_LEFT = 2;
 constexpr int PADDING_RIGHT = 4;
