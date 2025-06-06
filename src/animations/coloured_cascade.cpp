@@ -67,10 +67,12 @@ void ColouredCascade::drawFrame(const AnimationContext &context) {
                 std::chrono::milliseconds(MS_PER_EIGHTH_BEAT));
         }
         wattroff(subwins[winIdx], COLOR_PAIR(colourPair));
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(MS_PER_BEAT + MS_PER_EIGHTH_BEAT));
     }
 
     // Wait before clearing
-    std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_OCTUPLE_BEAT));
+    std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_QUADRUPLE_BEAT));
 
     std::shuffle(winOrder.begin(), winOrder.end(), context.rng);
 
@@ -86,6 +88,8 @@ void ColouredCascade::drawFrame(const AnimationContext &context) {
             std::this_thread::sleep_for(
                 std::chrono::milliseconds(MS_PER_EIGHTH_BEAT));
         }
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(MS_PER_BEAT + MS_PER_EIGHTH_BEAT));
     }
 
     // Cleanup
