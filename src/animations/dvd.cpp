@@ -16,14 +16,8 @@
 #include "../util/common.h"
 
 void DVD::drawFrame(const AnimationContext &context) {
-    int outerWinHeight, winWidth;
-    context.getDimensions(outerWinHeight, winWidth);
-
-    int topPadding = 1;
-    int winHeight = outerWinHeight - topPadding;
-
-    WINDOW *paddedWindow =
-        derwin(context.window, winHeight, winWidth, topPadding, 0);
+    int winHeight, winWidth;
+    context.getDimensions(winHeight, winWidth);
 
     const int wordLen = polyphonic.size();
     int x = (winWidth - wordLen) / 2;
@@ -70,7 +64,7 @@ void DVD::drawFrame(const AnimationContext &context) {
 
     int steps = 600;  // total bounces
     for (int i = 0; i < steps; ++i) {
-        werase(paddedWindow);
+        werase(context.window);
         for (int pidx = 0; pidx < polys.size(); ++pidx) {
             if (i < polyStartDelays[pidx])
                 continue;
@@ -81,12 +75,12 @@ void DVD::drawFrame(const AnimationContext &context) {
                 // Reverse the gradient: oldest = 0, newest = GRADIENT_LENGTH-1
                 int colourIndex =
                     getColourIndex(p.gradient, (int)p.trail.size() - 1 - t);
-                wattron(paddedWindow, COLOR_PAIR(colourIndex) | A_BOLD);
-                mvwprintw(paddedWindow, ty, tx, "%s", polyphonic.c_str());
-                wattroff(paddedWindow, COLOR_PAIR(colourIndex) | A_BOLD);
+                wattron(context.window, COLOR_PAIR(colourIndex) | A_BOLD);
+                mvwprintw(context.window, ty, tx, "%s", polyphonic.c_str());
+                wattroff(context.window, COLOR_PAIR(colourIndex) | A_BOLD);
             }
         }
-        wrefresh(paddedWindow);
+        wrefresh(context.window);
         std::this_thread::sleep_for(
             std::chrono::milliseconds(MS_PER_EIGHTH_BEAT));
         for (int pidx = 0; pidx < polys.size(); ++pidx) {
@@ -112,8 +106,4 @@ void DVD::drawFrame(const AnimationContext &context) {
                 p.trail.pop_front();
         }
     }
-
-    // Copy the final frame to the parent window before deleting paddedWindow
-    overwrite(paddedWindow, context.window);
-    delwin(paddedWindow);
 }
