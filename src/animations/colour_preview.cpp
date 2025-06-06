@@ -16,7 +16,11 @@
 void ColourPreview::drawFrame(const AnimationContext &context) {
     int winHeight, winWidth;
     context.getDimensions(winHeight, winWidth);
+
     werase(context.window);
+    wrefresh(context.window);
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(MS_PER_SIXTY_FOURTH_BEAT));
 
     auto gradients = getAllRandomGradients(context.rng);
     int N = gradients.size();
