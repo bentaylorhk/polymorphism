@@ -24,20 +24,24 @@ void CharFill::drawFrame(const AnimationContext &context) {
     int currentColourIndex = 0;
     for (int y = 0; y < rows; ++y) {
         for (int x = 0; x < cols; ++x) {
+            if (outputColours) {
+              wattron(context.window, COLOR_PAIR(currentColourIndex));
+            }
             mvwaddch(context.window, y, x, polyphonic[polyphonicIndex]);
+            if (outputColours) {
+              wattroff(context.window, COLOR_PAIR(currentColourIndex));
+            }
 
             polyphonicIndex++;
             if (polyphonicIndex >= polyphonic.size()) {
                 polyphonicIndex = 0;
 
                 if (outputColours) {
-                    wattroff(context.window, COLOR_PAIR(currentColourIndex));
                     outputColours = false;
                 } else {
                     outputColours = dist(context.rng);
                     if (outputColours) {
                         currentColourIndex = getRandomColourIndex(context.rng);
-                        wattron(context.window, COLOR_PAIR(currentColourIndex));
                     }
                 }
             }
