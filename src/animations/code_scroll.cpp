@@ -3,8 +3,6 @@
  * 2025
  */
 
-// TODO: Maybe prioritise better files, like this code_scroll and the main file
-
 #include "code_scroll.h"
 
 #include <chrono>
