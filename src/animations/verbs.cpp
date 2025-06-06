@@ -43,6 +43,7 @@ void Verbs::drawFrame(const AnimationContext &context) {
         // Clear line here, so the final polyphonic can be faded
         mvwhline(context.window, centerY, 0, ' ', cols);
     }
+    curs_set(FALSE);
 
     // Print final "POLYPHONIC" in a random colour, with color logic outside the
     // loop
@@ -53,9 +54,9 @@ void Verbs::drawFrame(const AnimationContext &context) {
     printWord(polyphonic);
     wattroff(context.window, COLOR_PAIR(colorPair));
 
+
     std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_DOUBLE_BEAT));
 
-    curs_set(FALSE);
     printWord("          ");
 
     wrefresh(context.window);
