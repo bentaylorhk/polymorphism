@@ -25,8 +25,8 @@ void Verbs::drawFrame(const AnimationContext &context) {
         // Speed to print each character, dependant on length of the word
         int charSleepMs = MS_PER_BEAT / word.length();
 
-        // Calculate startX to center this word
-        int wordStartX = cols / 2 - static_cast<int>(word.length()) / 2;
+        // Calculate startX to center this word, 1 accounting for cursor
+        int wordStartX = (cols / 2) - (static_cast<int>(word.length()) / 2) - 1;
 
         for (size_t i = 0; i < word.length(); ++i) {
             mvwaddch(context.window, centerY, wordStartX + i, word[i]);
