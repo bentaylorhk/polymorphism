@@ -9,7 +9,6 @@
 
 #include <algorithm>
 #include <numeric>
-#include <string>
 #include <thread>
 
 #include "../util/colours.h"
@@ -19,21 +18,20 @@ void ColouredCascade::drawFrame(const AnimationContext &context) {
     int winHeight, winWidth;
     context.getDimensions(winHeight, winWidth);
 
-    int wordLen = polyphonic.size();
-    int numFullCols = winWidth / wordLen;
-    int lastColWidth = winWidth % wordLen;
+    int numFullCols = winWidth / context.wordLen();
+    int lastColWidth = winWidth % context.wordLen();
 
     // Create subwindows for each column
     std::vector<WINDOW *> subwins;
     for (int col = 0; col < numFullCols; ++col) {
-        int x = col * wordLen;
-        subwins.push_back(derwin(context.window, winHeight, wordLen, 0, x));
+        int x = col * context.wordLen();
+        subwins.push_back(derwin(context.window, winHeight, context.wordLen(), 0, x));
     }
 
     // Truncated window at the end
     if (lastColWidth > 0) {
         subwins.push_back(derwin(context.window, winHeight, lastColWidth, 0,
-                                 numFullCols * wordLen));
+                                 numFullCols * context.wordLen()));
     }
 
     // Clear all subwindows to prevent inherited content/colours
@@ -54,13 +52,13 @@ void ColouredCascade::drawFrame(const AnimationContext &context) {
     // Fill each window in random order, preserving previous text, with colour
     for (auto winIdx : winOrder) {
         int width = (winIdx == numFullCols && lastColWidth > 0) ? lastColWidth
-                                                                : wordLen;
+                                                                : context.wordLen();
         int gradIdx = colourDist(context.rng);
         int colourPair = getColourIndex(gradient, gradIdx);
         wattron(subwins[winIdx], COLOR_PAIR(colourPair));
         for (int row = 0; row < winHeight; ++row) {
             for (int i = 0; i < width; ++i) {
-                mvwaddch(subwins[winIdx], row, i, polyphonic[i]);
+                mvwaddch(subwins[winIdx], row, i, context.word[i]);
             }
             wrefresh(subwins[winIdx]);
             std::this_thread::sleep_for(
@@ -79,7 +77,7 @@ void ColouredCascade::drawFrame(const AnimationContext &context) {
     // Clear each window in random order, no colour needed
     for (auto winIdx : winOrder) {
         int width = (winIdx == numFullCols && lastColWidth > 0) ? lastColWidth
-                                                                : wordLen;
+                                                                : context.wordLen();
         for (int row = 0; row < winHeight; ++row) {
             for (int i = 0; i < width; ++i) {
                 mvwaddch(subwins[winIdx], row, i, ' ');

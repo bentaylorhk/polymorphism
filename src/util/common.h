@@ -10,8 +10,6 @@
 #include <string>
 #include <vector>
 
-const std::string polyphonic = "POLYPHONIC";
-
 constexpr int BPM = 125;
 
 constexpr int MS_PER_BEAT = 60000 / BPM;

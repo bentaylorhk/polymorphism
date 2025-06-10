@@ -20,7 +20,7 @@ void DiagonalFillWipe::drawFrame(const AnimationContext &context) {
             int x = d - y;
             if (x >= 0 && x < cols) {
                 mvwaddch(context.window, y, x,
-                         polyphonic[d % polyphonic.size()]);
+                         context.word[d % context.wordLen()]);
             }
         }
         wrefresh(context.window);

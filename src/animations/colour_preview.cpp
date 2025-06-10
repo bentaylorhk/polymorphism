@@ -53,10 +53,12 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
         }
     };
 
-    // Lambda to draw POLYPHONIC across the entire row, repeating as needed
-    auto drawPolyphonic = [&](int row, int winWidth, Gradient gradient,
+    // Bake padding into displayed word for spacing
+    std::string paddedWord = context.word + "=-=";
+
+    // Lambda to draw word across the entire row, repeating as needed
+    auto drawWord = [&](int row, int winWidth, Gradient gradient,
                               bool always) {
-        int wordLen = polyphonic.size();
         for (int i = 0; i < winWidth; ++i) {
             int gradIdx = (i * GRADIENT_LENGTH) / winWidth;
             if (gradIdx >= GRADIENT_LENGTH)
@@ -66,7 +68,7 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
             chtype ch = mvwinch(context.window, row, i);
             if (always || (ch & A_CHARTEXT) == '=') {
                 wattron(context.window, COLOR_PAIR(colourPair));
-                mvwaddch(context.window, row, i, polyphonic[i % wordLen]);
+                mvwaddch(context.window, row, i, paddedWord[i % paddedWord.size()]);
                 wattroff(context.window, COLOR_PAIR(colourPair));
             }
         }
@@ -143,7 +145,6 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
     // 3. Fade all cells back to '.' and then to blank, except POLYPHONIC (all
     // sections at once, each fills only its band)
     int downFrames = 40;
-    int wordLen = polyphonic.size();
     for (int frame = 0; frame <= downFrames; ++frame) {
         float intensity = 1.0f - easeInOutQuad((float)frame / downFrames);
         yStart = 0;
@@ -176,9 +177,8 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
                     mvwaddch(context.window, row, col, c);
                     wattroff(context.window, COLOR_PAIR(colourPair));
                 }
-                // Draw POLYPHONIC on this row if needed
                 if (row == yMid) {
-                    drawPolyphonic(row, winWidth, gradient,
+                    drawWord(row, winWidth, gradient,
                                    frame == downFrames);
                 }
             }
@@ -192,6 +192,6 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
             std::chrono::milliseconds(MS_PER_SIXTEENTH_BEAT));
     }
     std::this_thread::sleep_for(
-        std::chrono::milliseconds(MS_PER_QUADRUPLE_BEAT));
+        std::chrono::milliseconds(MS_PER_QUADRUPLE_BEAT + MS_PER_DOUBLE_BEAT));
     wrefresh(context.window);
 }

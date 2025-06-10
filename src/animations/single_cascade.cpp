@@ -9,14 +9,11 @@
 
 #include <algorithm>
 #include <chrono>
-#include <random>
 #include <thread>
 
 constexpr int CASCADE_TIME = MS_PER_EIGHTH_BEAT;
 
 void SingleCascade::drawFrame(const AnimationContext &context) {
-    int polyphonicLength = polyphonic.size();
-
     int winHeight, outerWinWidth;
     context.getDimensions(winHeight, outerWinWidth);
 
@@ -30,33 +27,33 @@ void SingleCascade::drawFrame(const AnimationContext &context) {
     wclear(paddedWindow);
     wrefresh(paddedWindow);
 
-    int col_width = winWidth / polyphonicLength;
-    int col_rem = winWidth % polyphonicLength;
-    std::vector<WINDOW *> subwins;
+    int colWidth = winWidth / context.wordLen();
+    int colRem = winWidth % context.wordLen();
+    std::vector<WINDOW *> subWins;
     int x = 0;
-    for (int i = 0; i < polyphonicLength; ++i) {
-        int w = col_width;
-        subwins.push_back(derwin(paddedWindow, winHeight, w, 0, x));
+    for (int i = 0; i < context.wordLen(); ++i) {
+        int w = colWidth;
+        subWins.push_back(derwin(paddedWindow, winHeight, w, 0, x));
         x += w;
     }
 
     int middleRow = winHeight / 2;
     int trailLength = 5;
 
-    std::vector<int> indices(polyphonicLength);
+    std::vector<int> indices(context.wordLen());
     std::iota(indices.begin(), indices.end(), 0);
     std::shuffle(indices.begin(), indices.end(), context.rng);
     for (int idx : indices) {
         for (int row = 0; row < middleRow + trailLength; row++) {
             int eraseIdx = row - trailLength;
             if (row <= middleRow) {
-                mvwaddch(subwins[idx], row, (col_width - 1) / 2,
-                         polyphonic[idx]);
+                mvwaddch(subWins[idx], row, (colWidth - 1) / 2,
+                         context.word[idx]);
             }
             if (eraseIdx >= 0) {
-                mvwaddch(subwins[idx], eraseIdx, (col_width - 1) / 2, ' ');
+                mvwaddch(subWins[idx], eraseIdx, (colWidth - 1) / 2, ' ');
             }
-            wrefresh(subwins[idx]);
+            wrefresh(subWins[idx]);
             std::this_thread::sleep_for(
                 std::chrono::milliseconds(CASCADE_TIME));
         }
@@ -70,19 +67,19 @@ void SingleCascade::drawFrame(const AnimationContext &context) {
         for (int row = middleRow; row < winHeight + trailLength; row++) {
             int eraseIdx = row - trailLength;
             if (row < winHeight) {
-                mvwaddch(subwins[idx], row, (col_width - 1) / 2,
-                         polyphonic[idx]);
+                mvwaddch(subWins[idx], row, (colWidth - 1) / 2,
+                         context.word[idx]);
             }
             if (eraseIdx >= middleRow) {
-                mvwaddch(subwins[idx], eraseIdx, (col_width - 1) / 2, ' ');
+                mvwaddch(subWins[idx], eraseIdx, (colWidth - 1) / 2, ' ');
             }
-            wrefresh(subwins[idx]);
+            wrefresh(subWins[idx]);
             std::this_thread::sleep_for(
                 std::chrono::milliseconds(CASCADE_TIME));
         }
     }
 
-    for (auto w : subwins) {
+    for (auto w : subWins) {
         overwrite(w, paddedWindow);
         delwin(w);
     }

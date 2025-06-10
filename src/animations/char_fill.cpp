@@ -19,29 +19,35 @@ void CharFill::drawFrame(const AnimationContext &context) {
 
     std::bernoulli_distribution dist(0.1);
 
-    int polyphonicIndex = 0;
+    int wordIdx = 0;
     bool outputColours = false;
-    int currentColourIndex = 0;
+    int currentColourIdx = 0;
     for (int y = 0; y < rows; ++y) {
         for (int x = 0; x < cols; ++x) {
+
+            // Colour letters individually, to account for final truncated words
+            // being coloured
             if (outputColours) {
-              wattron(context.window, COLOR_PAIR(currentColourIndex));
-            }
-            mvwaddch(context.window, y, x, polyphonic[polyphonicIndex]);
-            if (outputColours) {
-              wattroff(context.window, COLOR_PAIR(currentColourIndex));
+              wattron(context.window, COLOR_PAIR(currentColourIdx));
             }
 
-            polyphonicIndex++;
-            if (polyphonicIndex >= polyphonic.size()) {
-                polyphonicIndex = 0;
+            mvwaddch(context.window, y, x, context.word[wordIdx]);
+
+            if (outputColours) {
+              wattroff(context.window, COLOR_PAIR(currentColourIdx));
+            }
+
+            wordIdx++;
+
+            if (wordIdx >= context.wordLen()) {
+                wordIdx = 0;
 
                 if (outputColours) {
                     outputColours = false;
                 } else {
                     outputColours = dist(context.rng);
                     if (outputColours) {
-                        currentColourIndex = getRandomColourIndex(context.rng);
+                        currentColourIdx = getRandomColourIndex(context.rng);
                     }
                 }
             }

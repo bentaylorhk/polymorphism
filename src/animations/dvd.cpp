@@ -19,8 +19,7 @@ void DVD::drawFrame(const AnimationContext &context) {
     int winHeight, winWidth;
     context.getDimensions(winHeight, winWidth);
 
-    const int wordLen = polyphonic.size();
-    int x = (winWidth - wordLen) / 2;
+    int x = (winWidth - context.wordLen()) / 2;
     int y = winHeight / 2;
     int dx = 1;
     int dy = 1;
@@ -41,7 +40,7 @@ void DVD::drawFrame(const AnimationContext &context) {
     };
     int trailLength = GRADIENT_LENGTH;
     std::vector<Poly> polys;
-    std::uniform_int_distribution<int> xDist(5, winWidth - wordLen - 5);
+    std::uniform_int_distribution<int> xDist(5, winWidth - context.wordLen() - 5);
     std::uniform_int_distribution<int> yDist(5, winHeight - 1 - 5);
     std::vector<Gradient> gradients = getAllRandomGradients(context.rng);
     for (int i = 0; i < gradients.size(); ++i) {
@@ -76,7 +75,7 @@ void DVD::drawFrame(const AnimationContext &context) {
                 int colourIndex =
                     getColourIndex(p.gradient, (int)p.trail.size() - 1 - t);
                 wattron(context.window, COLOR_PAIR(colourIndex) | A_BOLD);
-                mvwprintw(context.window, ty, tx, "%s", polyphonic.c_str());
+                mvwprintw(context.window, ty, tx, "%s", context.word.c_str());
                 wattroff(context.window, COLOR_PAIR(colourIndex) | A_BOLD);
             }
         }
@@ -89,14 +88,14 @@ void DVD::drawFrame(const AnimationContext &context) {
             Poly &p = polys[pidx];
             p.x += p.dx;
             p.y += p.dy;
-            if (p.x <= 0 || p.x + wordLen >= winWidth)
+            if (p.x <= 0 || p.x + context.wordLen() >= winWidth)
                 p.dx = -p.dx;
             if (p.y <= 0 || p.y >= winHeight - 1)
                 p.dy = -p.dy;
             if (p.x < 0)
                 p.x = 0;
-            if (p.x + wordLen > winWidth)
-                p.x = winWidth - wordLen;
+            if (p.x + context.wordLen() > winWidth)
+                p.x = winWidth - context.wordLen();
             if (p.y < 0)
                 p.y = 0;
             if (p.y >= winHeight)

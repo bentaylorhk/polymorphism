@@ -17,7 +17,6 @@ void Verbs::drawFrame(const AnimationContext &context) {
     context.getDimensions(rows, cols);
     int centerY = rows / 2;
 
-    // Shuffle the verbs before displaying
     std::vector<std::string> shuffledVerbs = verbs;
     std::shuffle(shuffledVerbs.begin(), shuffledVerbs.end(), context.rng);
 
@@ -45,19 +44,20 @@ void Verbs::drawFrame(const AnimationContext &context) {
     }
     curs_set(FALSE);
 
-    // Print final "POLYPHONIC" in a random colour, with color logic outside the
-    // loop
+    // Print final word in a random colour
     Gradient grad = getRandomGradient(context.rng);
     int colorPair = getColourIndex(grad, 0);
 
     wattron(context.window, COLOR_PAIR(colorPair));
-    printWord(polyphonic);
+    printWord(context.word);
     wattroff(context.window, COLOR_PAIR(colorPair));
 
 
     std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_DOUBLE_BEAT));
 
-    printWord("          ");
+    // Fading the final word, matching its length to suit timing
+    std::string spaces(context.wordLen(), ' ');
+    printWord(spaces);
 
     wrefresh(context.window);
 }

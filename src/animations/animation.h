@@ -14,16 +14,23 @@
 
 #include "../util/common.h"
 
-constexpr auto MAX_ANIMATION_DURATION = std::chrono::seconds(100);
-
 enum class TransitionState { Blank, Anything };
 
 struct AnimationContext {
     WINDOW *window;
+
+    const std::string &word;
+
     const std::string &sourceDir;
+
     std::mt19937 &rng;
+
     inline void getDimensions(int &height, int &width) const {
         getmaxyx(window, height, width);
+    }
+
+    inline size_t wordLen() const {
+        return word.size();
     }
 };
 

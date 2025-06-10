@@ -92,6 +92,11 @@ int main(int argc, char *argv[]) {
         ->default_val(sourceDir)
         ->check(CLI::ExistingDirectory);
 
+    std::string word = "POLYPHONIC";
+    app.add_option("--word", word,
+                   "Word to be used and displayed in animations")
+        ->default_val(word);
+
     CLI11_PARSE(app, argc, argv);
 
     initscr();
@@ -115,8 +120,7 @@ int main(int argc, char *argv[]) {
     std::random_device rd;
     std::mt19937 rng(static_cast<std::mt19937::result_type>(rd()));
 
-    // Create animation context with logger
-    AnimationContext context{subwindow, sourceDir, rng};
+    AnimationContext context{.window=subwindow, .word=word, .sourceDir=sourceDir, .rng=rng};
 
     if (!animationName.empty()) {
         // Play a specific animation by name
