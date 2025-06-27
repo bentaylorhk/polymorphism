@@ -22,7 +22,7 @@
 #if IS_POLYMORPHISM
 constexpr const char *DEFAULT_WORD = "POLYPHONIC";
 #elif IS_SCREENSAVER
-constexpr const char *DEFAULT_WORD = "polyOS";
+constexpr const char *DEFAULT_WORD = "POLYOS";
 #else
 constexpr const char *DEFAULT_WORD = "POLYMORPHISM";
 #endif

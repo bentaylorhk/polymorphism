@@ -13,6 +13,10 @@
 #include "../util/colours.h"
 #include "../util/common.h"
 
+constexpr int SECTION_HEIGHT = 3;
+constexpr int GAP = 1;
+constexpr int TOTAL_SECTION_HEIGHT = SECTION_HEIGHT + GAP;
+
 const std::vector<char> PREVIEW_CHARS = {'=', 'x', '*', '#', 'X', '$', '@'};
 
 void ColourPreview::drawFrame(const AnimationContext &context) {
@@ -24,15 +28,12 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
     std::this_thread::sleep_for(
         std::chrono::milliseconds(MS_PER_SIXTY_FOURTH_BEAT));
 
-    auto gradients = getAllRandomGradients(context.rng);
-    int N = gradients.size();
-    int sectionHeight = 3;  // Each gradient row is 3 cells tall
-    int totalGradientRows =
-        N * sectionHeight + (N - 1);  // (N-1) empty rows between
-    int yStart = 0;
-    bool leftToRight = true;
+    int numSections = (winHeight + GAP) / TOTAL_SECTION_HEIGHT;
+
+    std::vector<Gradient> gradients = getAllRandomGradients(context.rng);
 
     // Lambda to fill a section with animated chars
+    int fillSectionWait = MS_PER_DOUBLE_BEAT / winWidth;
     auto fillSection = [&](int ySectionStart, int ySectionEnd,
                            Gradient gradient, bool ltr, char fillChar) {
         for (int step = 0; step < winWidth; ++step) {
@@ -49,16 +50,12 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
             }
             wrefresh(context.window);
             std::this_thread::sleep_for(
-                std::chrono::milliseconds(MS_PER_SIXTY_FOURTH_BEAT));
+                std::chrono::milliseconds(fillSectionWait));
         }
     };
 
-    // Bake padding into displayed word for spacing
-    std::string paddedWord = context.word + "=-=";
-
     // Lambda to draw word across the entire row, repeating as needed
-    auto drawWord = [&](int row, int winWidth, Gradient gradient,
-                              bool always) {
+    auto drawWord = [&](int row, int winWidth, Gradient gradient, bool always) {
         for (int i = 0; i < winWidth; ++i) {
             int gradIdx = (i * GRADIENT_LENGTH) / winWidth;
             if (gradIdx >= GRADIENT_LENGTH)
@@ -68,26 +65,31 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
             chtype ch = mvwinch(context.window, row, i);
             if (always || (ch & A_CHARTEXT) == '=') {
                 wattron(context.window, COLOR_PAIR(colourPair));
-                mvwaddch(context.window, row, i, paddedWord[i % paddedWord.size()]);
+                mvwaddch(context.window, row, i,
+                         context.word[i % context.wordLen()]);
                 wattroff(context.window, COLOR_PAIR(colourPair));
             }
         }
     };
 
-    yStart = 0;
-    for (int idx = 0; idx < N; ++idx) {
+    int yStart = GAP;
+    bool leftToRight = true;
+    for (int idx = 0; idx < numSections; ++idx) {
         int ySectionStart = yStart;
-        int ySectionEnd = yStart + sectionHeight;
-        Gradient gradient = gradients[idx];
+        int ySectionEnd = yStart + SECTION_HEIGHT;
+        Gradient gradient = gradients[idx % gradients.size()];
         fillSection(ySectionStart, ySectionEnd, gradient, leftToRight,
                     PREVIEW_CHARS[0]);
         leftToRight = !leftToRight;
-        yStart += sectionHeight;
-        // Add a single empty row between gradient rows, except after the last
-        if (idx < N - 1 && yStart < winHeight) {
-            for (int col = 0; col < winWidth; ++col)
-                mvwaddch(context.window, yStart, col, ' ');
-            ++yStart;
+        yStart += SECTION_HEIGHT;
+        // Add empty row(s) between gradient rows, except after the last
+        if (idx < numSections - 1 && yStart < winHeight) {
+            for (int gapIdx = 0; gapIdx < GAP; ++gapIdx) {
+                for (int col = 0; col < winWidth; ++col) {
+                    mvwaddch(context.window, yStart, col, ' ');
+                }
+                yStart++;
+            }
         }
     }
     wrefresh(context.window);
@@ -106,11 +108,11 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
         } else {
             intensity = 1.0f;
         }
-        yStart = 0;
-        for (int idx = 0; idx < N; ++idx) {
+        yStart = GAP;
+        for (int idx = 0; idx < numSections; ++idx) {
             int ySectionStart = yStart;
-            int ySectionEnd = yStart + sectionHeight;
-            Gradient gradient = gradients[idx];
+            int ySectionEnd = yStart + SECTION_HEIGHT;
+            Gradient gradient = gradients[idx % gradients.size()];
             for (int row = ySectionStart; row < ySectionEnd && row < winHeight;
                  ++row) {
                 for (int col = 0; col < winWidth; ++col) {
@@ -132,27 +134,28 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
                     wattroff(context.window, COLOR_PAIR(colourPair));
                 }
             }
-            yStart += sectionHeight;
-            // Skip the empty row
-            if (idx < N - 1 && yStart < winHeight)
-                ++yStart;
+            yStart += SECTION_HEIGHT;
+
+            // Skip the empty row(s)
+            if (idx < numSections - 1 && yStart < winHeight) {
+                yStart += GAP;
+            }
         }
         wrefresh(context.window);
         std::this_thread::sleep_for(
             std::chrono::milliseconds(MS_PER_SIXTEENTH_BEAT));
     }
 
-    // 3. Fade all cells back to '.' and then to blank, except POLYPHONIC (all
-    // sections at once, each fills only its band)
+    // 3. Static all cells, then go back to '=' border and given word in centre.
     int downFrames = 40;
     for (int frame = 0; frame <= downFrames; ++frame) {
         float intensity = 1.0f - easeInOutQuad((float)frame / downFrames);
-        yStart = 0;
-        for (int idx = 0; idx < N; ++idx) {
+        yStart = GAP;
+        for (int idx = 0; idx < numSections; ++idx) {
             int ySectionStart = yStart;
-            int ySectionEnd = yStart + sectionHeight;
-            Gradient gradient = gradients[idx];
-            int yMid = ySectionStart + sectionHeight / 2;
+            int ySectionEnd = yStart + SECTION_HEIGHT;
+            Gradient gradient = gradients[idx % gradients.size()];
+            int yMid = ySectionStart + SECTION_HEIGHT / 2;
             for (int row = ySectionStart; row < ySectionEnd && row < winHeight;
                  ++row) {
                 for (int col = 0; col < winWidth; ++col) {
@@ -178,14 +181,14 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
                     wattroff(context.window, COLOR_PAIR(colourPair));
                 }
                 if (row == yMid) {
-                    drawWord(row, winWidth, gradient,
-                                   frame == downFrames);
+                    drawWord(row, winWidth, gradient, frame == downFrames);
                 }
             }
-            yStart += sectionHeight;
-            // Skip the empty row
-            if (idx < N - 1 && yStart < winHeight)
-                ++yStart;
+            yStart += SECTION_HEIGHT;
+            // Skip the empty row(s)
+            if (idx < numSections - 1 && yStart < winHeight) {
+                yStart += GAP;
+            }
         }
         wrefresh(context.window);
         std::this_thread::sleep_for(
