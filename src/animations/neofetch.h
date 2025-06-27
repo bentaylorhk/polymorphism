@@ -9,12 +9,13 @@
 
 class Neofetch : public Animation {
    public:
-    Neofetch() : Animation(TransitionState::Blank, TransitionState::Anything) {
-    }
+    Neofetch();
     const char *name() const override {
         return "neofetch";
     }
 
    protected:
     void drawFrame(const AnimationContext &context) override;
+    std::vector<std::string> infoLines;
+    std::string title;
 };
