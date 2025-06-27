@@ -8,6 +8,7 @@
 #include <ncurses.h>
 
 #include <algorithm>
+#include <cmath>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -16,7 +17,8 @@
 #include "../util/colours.h"
 #include "../util/common.h"
 
-constexpr const char* ASCII_ART = R"(    P   O   L   Y
+constexpr const char* ASCII_ART = R"(
+    P   O   L   Y
 
   .g8""8q.   .M"""bgd
 .dP'    `YM.,MI    "Y
@@ -41,6 +43,8 @@ CPU - AMD Ryzen 5 8500G @ 5GHz
 GPU - AMD Radeon HD 8490
 Memory - 14.71GiB
 )";
+
+constexpr int COLOUR_BAR_WIDTH = 6;
 
 void Neofetch::drawFrame(const AnimationContext& context) {
     int winHeight, winWidth;
@@ -72,40 +76,48 @@ void Neofetch::drawFrame(const AnimationContext& context) {
     }
 
     // Calculate dimensions for layout
-    int art_width = 0, art_height = 0;
-    getStringDimensions(ASCII_ART, art_width, art_height);
-    int info_width = 0, info_height = 0;
-    getStringDimensions(INFO_TEXT, info_width, info_height);
+    int artWidth = 0, artHeight = 0;
+    getStringDimensions(ASCII_ART, artWidth, artHeight);
+    int infoWidth = 0, infoHeight = 0;
+    getStringDimensions(INFO_TEXT, infoWidth, infoHeight);
 
-    // Padding and layout variables
-    int left_pad = 2;
-    int art_col_width = art_width + 2;  // 2 for a little extra space
-    int info_col_start =
-        left_pad + art_col_width + 1;  // 2 for gap between art and info
-    // Center art vertically in the window
-    int art_top_pad = (winHeight - art_height) / 2;
+    auto randomGradients = getAllRandomGradients(context.rng);
+    int colourBarHeight = (int)randomGradients.size();
+    int colourBarLen = GRADIENT_LENGTH * COLOUR_BAR_WIDTH;
+
+    int infoAndBarHeight = infoHeight + colourBarHeight + 1;
+    int blockHeight = std::max(artHeight, infoAndBarHeight);
+    int blockTopPad = (winHeight - blockHeight) / 2;
+
+    int artColX = (winWidth - (artWidth + infoWidth + 4)) / 2;
+    if (artColX < 0)
+        artColX = 0;
+    int infoColX = artColX + artWidth + 4;
+
+    int artTopPad = blockTopPad + (blockHeight - artHeight) / 2;
+    int infoTopPad = blockTopPad + (blockHeight - infoAndBarHeight) / 2;
 
     // Print ASCII art
-    for (size_t i = 0;
-         i < art_lines.size() && (art_top_pad + (int)i) < winHeight; ++i) {
-        mvwprintw(context.window, art_top_pad + i, left_pad, "%s",
+    for (size_t i = 0; i < art_lines.size() && (artTopPad + (int)i) < winHeight;
+         ++i) {
+        mvwprintw(context.window, artTopPad + i, artColX, "%s",
                   art_lines[i].c_str());
     }
     // Print info text
-    for (size_t i = 0; i < info_lines.size() && (int)i < winHeight; ++i) {
-        mvwprintw(context.window, i, info_col_start, "%s",
+    for (size_t i = 0;
+         i < info_lines.size() && (infoTopPad + (int)i) < winHeight; ++i) {
+        mvwprintw(context.window, infoTopPad + i, infoColX, "%s",
                   info_lines[i].c_str());
     }
 
     // Fade in ASCII art
-    int fade_frames = 12;
-    for (int frame = 0; frame <= fade_frames; ++frame) {
-        float progress = (float)frame / fade_frames;
-        int lines_to_show = std::round(progress * art_lines.size());
+    int fadeFrames = 12;
+    for (int frame = 0; frame <= fadeFrames; ++frame) {
+        float progress = (float)frame / fadeFrames;
+        int linesToShow = std::round(progress * art_lines.size());
         werase(context.window);
-        for (int i = 0; i < lines_to_show && (art_top_pad + i) < winHeight;
-             ++i) {
-            mvwprintw(context.window, art_top_pad + i, left_pad, "%s",
+        for (int i = 0; i < linesToShow && (artTopPad + i) < winHeight; ++i) {
+            mvwprintw(context.window, artTopPad + i, artColX, "%s",
                       art_lines[i].c_str());
         }
         wrefresh(context.window);
@@ -113,43 +125,38 @@ void Neofetch::drawFrame(const AnimationContext& context) {
             std::chrono::milliseconds(MS_PER_SIXTEENTH_BEAT));
     }
 
-    // Animate info text, one character at a time with cursor enabled
+    // Animate info text
     curs_set(TRUE);
-    int info_x = info_col_start;
-    // Lower lambda = more variance, higher chance of long pauses
-    std::exponential_distribution<double> typing_delay_dist(
-        1.0 / 20.0);  // mean ~6ms, but more long tails
-    for (size_t i = 0; i < info_lines.size() && (int)i < winHeight; ++i) {
-        int line_y = i;
-        int line_x = info_x;
+    int infoX = infoColX;
+    std::exponential_distribution<double> typingDelayDist(1.0 / 20.0);
+    for (size_t i = 0;
+         i < info_lines.size() && (infoTopPad + (int)i) < winHeight; ++i) {
+        int lineY = infoTopPad + i;
+        int lineX = infoX;
         const std::string& line = info_lines[i];
         for (size_t c = 0; c < line.size(); ++c) {
-            mvwaddch(context.window, line_y, line_x + c, line[c]);
-            wmove(context.window, line_y, line_x + c + 1);
+            mvwaddch(context.window, lineY, lineX + c, line[c]);
+            wmove(context.window, lineY, lineX + c + 1);
             wrefresh(context.window);
-            // Exponential distribution: mostly short, sometimes long
             int delay = std::clamp(
-                static_cast<int>(typing_delay_dist(context.rng)), 10, 60);
+                static_cast<int>(typingDelayDist(context.rng)), 10, 60);
             std::this_thread::sleep_for(std::chrono::milliseconds(delay));
         }
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_DOUBLE_BEAT));
     curs_set(FALSE);
 
-    // Animate gradient bars from left to right (fade in)
-    constexpr int COLOUR_BAR_WIDTH = 6;
-    auto random_gradients = getAllRandomGradients(context.rng);
-    int grad_y = winHeight - (int)random_gradients.size() - 1;
-    int grad_x = info_col_start;
-    for (int col = 0; col < GRADIENT_LENGTH * COLOUR_BAR_WIDTH; ++col) {
-        for (size_t g = 0; g < random_gradients.size(); ++g) {
-            int grad_idx = col / COLOUR_BAR_WIDTH;
-            if (grad_idx >= GRADIENT_LENGTH)
+    // Animate gradient bars
+    int gradY = infoTopPad + infoHeight + 1;
+    int gradX = infoColX;
+    for (int col = 0; col < colourBarLen; ++col) {
+        for (size_t g = 0; g < randomGradients.size(); ++g) {
+            int gradIdx = col / COLOUR_BAR_WIDTH;
+            if (gradIdx >= GRADIENT_LENGTH)
                 continue;
-            int colourPair =
-                getInverseColourIndex(random_gradients[g], grad_idx);
+            int colourPair = getInverseColourIndex(randomGradients[g], gradIdx);
             wattron(context.window, COLOR_PAIR(colourPair));
-            mvwaddch(context.window, grad_y + g, grad_x + col, ' ');
+            mvwaddch(context.window, gradY + g, gradX + col, ' ');
             wattroff(context.window, COLOR_PAIR(colourPair));
         }
         wrefresh(context.window);
@@ -159,13 +166,13 @@ void Neofetch::drawFrame(const AnimationContext& context) {
     std::this_thread::sleep_for(
         std::chrono::milliseconds(MS_PER_QUADRUPLE_BEAT));
 
-    // Fade out gradient bars from left to right (same as fade in, but blank)
-    for (int col = 0; col < GRADIENT_LENGTH * COLOUR_BAR_WIDTH; ++col) {
-        for (size_t g = 0; g < random_gradients.size(); ++g) {
-            int grad_idx = col / COLOUR_BAR_WIDTH;
-            if (grad_idx >= GRADIENT_LENGTH)
+    // Fade out gradient bars
+    for (int col = 0; col < colourBarLen; ++col) {
+        for (size_t g = 0; g < randomGradients.size(); ++g) {
+            int gradIdx = col / COLOUR_BAR_WIDTH;
+            if (gradIdx >= GRADIENT_LENGTH)
                 continue;
-            mvwaddch(context.window, grad_y + g, grad_x + col, ' ');
+            mvwaddch(context.window, gradY + g, gradX + col, ' ');
         }
         wrefresh(context.window);
         std::this_thread::sleep_for(
