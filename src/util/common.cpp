@@ -11,7 +11,6 @@
 #include <sstream>
 
 void getStringDimensions(const std::string &input, int &width, int &height) {
-    // Initialising the return values
     width = 0;
     height = 0;
 

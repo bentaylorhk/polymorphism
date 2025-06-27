@@ -7,6 +7,7 @@
 
 #include <ncurses.h>
 
+#include <algorithm>
 #include <thread>
 
 void Static::drawFrame(const AnimationContext &context) {

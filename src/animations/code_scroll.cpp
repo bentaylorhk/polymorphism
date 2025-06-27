@@ -5,6 +5,7 @@
 
 #include "code_scroll.h"
 
+#include <algorithm>
 #include <chrono>
 #include <filesystem>
 #include <fstream>

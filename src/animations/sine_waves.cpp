@@ -13,7 +13,6 @@
 
 #include "../util/common.h"
 
-constexpr int LINE_WAIT_TIME = MS_PER_SIXTEENTH_BEAT;
 constexpr int WAVE_WAIT_TIME = MS_PER_SIXTEENTH_BEAT;
 constexpr int PAUSE_TIME = MS_PER_DOUBLE_BEAT;
 
@@ -47,10 +46,12 @@ void SineWaves::drawFrame(const AnimationContext &context) {
     double amp2_rand = 0.5 + (context.rng() % 30) * 0.02;  // 0.5 to 1.08
     double amp3_rand = 0.3 + (context.rng() % 30) * 0.02;  // 0.3 to 0.88
 
+    // Stretch across screen in 4 beats
+    int lineWaitTime = MS_PER_QUADRUPLE_BEAT / cols;
     for (int x = cols - 1; x >= 0; --x) {
         mvwaddch(context.window, mid_row, x, '.');
         wrefresh(context.window);
-        std::this_thread::sleep_for(std::chrono::milliseconds(LINE_WAIT_TIME));
+        std::this_thread::sleep_for(std::chrono::milliseconds(lineWaitTime));
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(PAUSE_TIME));
 
@@ -135,7 +136,7 @@ void SineWaves::drawFrame(const AnimationContext &context) {
     for (int x = cols - 1; x >= 0; --x) {
         mvwaddch(context.window, mid_row, x, ' ');
         wrefresh(context.window);
-        std::this_thread::sleep_for(std::chrono::milliseconds(LINE_WAIT_TIME));
+        std::this_thread::sleep_for(std::chrono::milliseconds(lineWaitTime));
     }
     werase(context.window);
     wrefresh(context.window);

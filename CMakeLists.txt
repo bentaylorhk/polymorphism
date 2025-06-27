@@ -4,9 +4,9 @@
 cmake_minimum_required(VERSION 3.31)
 
 project(
-    PolyphonicRSVP
+    Polymorphism
     VERSION 1.0
-    DESCRIPTION "Collection of ascii art animations for Polyphonic RSVP"
+    DESCRIPTION "Collection of ascii art animations for Polyphonic"
     LANGUAGES CXX
 )
 

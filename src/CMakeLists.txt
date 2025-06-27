@@ -4,9 +4,20 @@
 add_subdirectory(animations)
 add_subdirectory(util)
 
-# Only add main.cpp to the executable (common.cpp will be in util library)
-add_executable(polyphonic_rsvp main.cpp)
+set(SOURCES main.cpp)
 
-target_link_libraries(polyphonic_rsvp PRIVATE animations ncurses CLI11::CLI11 util)
+add_executable(polymorphism ${SOURCES})
+target_compile_definitions(polymorphism PRIVATE IS_POLYMORPHISM=1 IS_SCREENSAVER=0)
+target_link_libraries(polymorphism PRIVATE animations ncurses CLI11::CLI11 util)
+set_target_properties(polymorphism PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
 
-install(TARGETS polyphonic_rsvp RUNTIME DESTINATION bin)
+add_executable(screensaver ${SOURCES})
+target_compile_definitions(screensaver PRIVATE IS_POLYMORPHISM=0 IS_SCREENSAVER=1)
+target_link_libraries(screensaver PRIVATE animations ncurses CLI11::CLI11 util)
+set_target_properties(screensaver PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
+
+install(TARGETS polymorphism screensaver RUNTIME DESTINATION bin)

@@ -19,6 +19,14 @@
 #include "util/colours.h"
 #include "util/common.h"
 
+#if IS_POLYMORPHISM
+constexpr const char *DEFAULT_WORD = "POLYPHONIC";
+#elif IS_SCREENSAVER
+constexpr const char *DEFAULT_WORD = "polyOS";
+#else
+constexpr const char *DEFAULT_WORD = "POLYMORPHISM";
+#endif
+
 constexpr int PADDING_TOP = 2;
 constexpr int PADDING_BOTTOM = 0;
 constexpr int PADDING_LEFT = 2;
@@ -79,8 +87,8 @@ void loop(AnimationContext &context) {
 
 int main(int argc, char *argv[]) {
     CLI::App app{
-        "Polyphonic RSVP: A collection of ASCII art animations made for the "
-        "event 'Polyphonic RSVP'."};
+        "Polymorphism: A collection of ASCII art animations made for "
+        "'Polyphonic'."};
 
     std::string animationName;
     app.add_option("--animation", animationName,
@@ -92,7 +100,7 @@ int main(int argc, char *argv[]) {
         ->default_val(sourceDir)
         ->check(CLI::ExistingDirectory);
 
-    std::string word = "POLYPHONIC";
+    std::string word = DEFAULT_WORD;
     app.add_option("--word", word,
                    "Word to be used and displayed in animations")
         ->default_val(word);
@@ -105,29 +113,38 @@ int main(int argc, char *argv[]) {
 
     setupColours();
 
-    // Creating a padded window to suit overscanned CRT
     int max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
 
-    // Calculate dimensions for the subwindow
-    int win_height = max_y - PADDING_TOP - PADDING_BOTTOM;
-    int win_width = max_x - PADDING_LEFT - PADDING_RIGHT;
+    WINDOW *mainWindow;
+    int win_height;
+    int win_width;
+
+    // Polyphonic exhibition requires padded window for CRT overscan
+#if IS_POLYMORPHISM
+    win_height = max_y - PADDING_TOP - PADDING_BOTTOM;
+    win_width = max_x - PADDING_LEFT - PADDING_RIGHT;
 
     // Create the subwindow with position and size
-    WINDOW *subwindow =
-        newwin(win_height, win_width, PADDING_TOP, PADDING_LEFT);
+    mainWindow = newwin(win_height, win_width, PADDING_TOP, PADDING_LEFT);
+#else
+    mainWindow = stdscr;
+    win_height = max_y;
+    win_width = max_x;
+#endif
 
     std::random_device rd;
     std::mt19937 rng(static_cast<std::mt19937::result_type>(rd()));
 
-    AnimationContext context{.window=subwindow, .word=word, .sourceDir=sourceDir, .rng=rng};
+    AnimationContext context{
+        .window = mainWindow, .word = word, .sourceDir = sourceDir, .rng = rng};
 
     if (!animationName.empty()) {
         // Play a specific animation by name
         std::shared_ptr<Animation> animation =
             findAnimationByName(animationName);
         if (!animation) {
-            delwin(subwindow);
+            delwin(mainWindow);
             endwin();
             std::cerr << "Error: Animation '" << animationName
                       << "' not found. Available animations are:";
@@ -156,7 +173,9 @@ int main(int argc, char *argv[]) {
     }
 
     curs_set(TRUE);
-    delwin(subwindow);
+    if (mainWindow != stdscr) {
+        delwin(mainWindow);
+    }
     endwin();
     return EXIT_SUCCESS;
 }
