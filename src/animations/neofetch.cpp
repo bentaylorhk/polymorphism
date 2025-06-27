@@ -42,7 +42,7 @@ Neofetch::Neofetch()
     gethostname(hostname, sizeof(hostname));
     std::string hostStr = hostname;
 
-    title = username + " @ " + hostStr;
+    std::string title = username + " @ " + hostStr;
 
     infoLines.push_back(title);
     infoLines.push_back(std::string(title.size(), '='));
@@ -81,19 +81,16 @@ Neofetch::Neofetch()
     infoLines.push_back("Shell - " + shell +
                         (shellVer.empty() ? "" : (" " + shellVer)));
 
-    std::string displayInfo = "";
-    FILE* fp3 = popen("xrandr | grep '*' | head -1 | awk '{print $1}'", "r");
-    char dispBuf[64] = "";
-    if (fp3 && fgets(dispBuf, sizeof(dispBuf), fp3)) {
-        displayInfo = dispBuf;
-        displayInfo.erase(displayInfo.find_last_not_of(" \n\r") + 1);
+    // Number of running processes
+    FILE* fpProc = popen("ps ax | wc -l", "r");
+    char procBuf[32] = "";
+    int procCount = 0;
+    if (fpProc && fgets(procBuf, sizeof(procBuf), fpProc)) {
+        procCount = atoi(procBuf);
     }
-    if (fp3)
-        pclose(fp3);
-    infoLines.push_back("Resolution - " +
-                        (displayInfo.empty() ? "?" : displayInfo));
-
-    infoLines.push_back("Font - scientifica");
+    if (fpProc)
+        pclose(fpProc);
+    infoLines.push_back("Processes - " + std::to_string(procCount));
 
     FILE* fpUptime = fopen("/proc/uptime", "r");
     if (fpUptime) {
@@ -116,6 +113,20 @@ Neofetch::Neofetch()
         fclose(fpUptime);
     }
 
+    std::string displayInfo = "";
+    FILE* fp3 = popen("xrandr | grep '*' | head -1 | awk '{print $1}'", "r");
+    char dispBuf[64] = "";
+    if (fp3 && fgets(dispBuf, sizeof(dispBuf), fp3)) {
+        displayInfo = dispBuf;
+        displayInfo.erase(displayInfo.find_last_not_of(" \n\r") + 1);
+    }
+    if (fp3)
+        pclose(fp3);
+    infoLines.push_back("Resolution - " +
+                        (displayInfo.empty() ? "?" : displayInfo));
+
+    infoLines.push_back("Font - scientifica");
+
     std::string cpuName = "";
     FILE* fp4 = fopen("/proc/cpuinfo", "r");
     if (fp4) {
@@ -135,35 +146,48 @@ Neofetch::Neofetch()
     }
     infoLines.push_back("CPU - " + (cpuName.empty() ? "?" : cpuName));
 
-    std::string gpuName = "";
-    FILE* fp5 = popen("lspci | grep VGA | head -1 | cut -d ':' -f3-", "r");
-    char gpuBuf[256] = "";
-    if (fp5 && fgets(gpuBuf, sizeof(gpuBuf), fp5)) {
-        gpuName = gpuBuf;
-        gpuName.erase(gpuName.find_last_not_of(" \n\r") + 1);
-    }
-    if (fp5)
-        pclose(fp5);
-    infoLines.push_back("GPU - " + (gpuName.empty() ? "?" : gpuName));
+    // Kernel architecture
+    infoLines.push_back(std::string("Arch - ") + uts.machine);
 
-    std::string memStr = "";
-    FILE* fp6 = fopen("/proc/meminfo", "r");
-    long memKb = 0;
-    if (fp6) {
+    // CPU core count
+    int nproc = sysconf(_SC_NPROCESSORS_ONLN);
+    infoLines.push_back("Cores - " + std::to_string(nproc));
+
+    // IP Address
+    FILE* fpIp = popen("hostname -I | awk '{print $1}'", "r");
+    char ipBuf[64] = "";
+    std::string ipStr = "";
+    if (fpIp && fgets(ipBuf, sizeof(ipBuf), fpIp)) {
+        ipStr = ipBuf;
+        ipStr.erase(ipStr.find_last_not_of(" \n\r") + 1);
+    }
+    if (fpIp)
+        pclose(fpIp);
+    if (!ipStr.empty())
+        infoLines.push_back("IP - " + ipStr);
+
+    // Memory info
+    FILE* fpMem = fopen("/proc/meminfo", "r");
+    if (fpMem) {
         char line[256];
-        while (fgets(line, sizeof(line), fp6)) {
+        while (fgets(line, sizeof(line), fpMem)) {
             std::string l(line);
-            if (l.find("MemTotal:") == 0) {
-                sscanf(line, "MemTotal: %ld kB", &memKb);
+            if (l.find("MemTotal") != std::string::npos) {
+                auto pos = l.find(":");
+                if (pos != std::string::npos) {
+                    std::string memValue = l.substr(pos + 1);
+                    memValue.erase(memValue.find_last_not_of(" \n\r") + 1);
+                    long memKb = strtol(memValue.c_str(), nullptr, 10);
+                    double memGiB = memKb / 1048576.0;
+                    char memOut[64];
+                    snprintf(memOut, sizeof(memOut), "%.2fGiB", memGiB);
+                    infoLines.push_back(std::string("Memory - ") + memOut);
+                }
                 break;
             }
         }
-        fclose(fp6);
+        fclose(fpMem);
     }
-    double memGiB = memKb / 1048576.0;
-    char memOut[64];
-    snprintf(memOut, sizeof(memOut), "%.2fGiB", memGiB);
-    infoLines.push_back(std::string("Memory - ") + memOut);
 }
 
 void Neofetch::drawFrame(const AnimationContext& context) {
@@ -185,30 +209,34 @@ void Neofetch::drawFrame(const AnimationContext& context) {
         }
     }
 
-    // Calculate dimensions for layout
     int artWidth = 0, artHeight = 0;
     getStringDimensions(ASCII_ART, artWidth, artHeight);
-    // Use infoLines and title as members
-    int infoWidth = 0, infoHeight = 0;
-    getStringDimensions(title + "\n" + std::string(title.size(), '=') + "\n",
-                        infoWidth, infoHeight);
-    infoHeight = infoLines.size();
 
-    constexpr int COLOUR_BAR_WIDTH = 6;
+    int infoWidth = 0;
+    int infoHeight = infoLines.size();
+    for (const auto& line : infoLines) {
+        if ((int)line.size() > infoWidth) {
+            infoWidth = line.size();
+        }
+    }
 
+    constexpr int COLOUR_BAR_WIDTH = 7;
     auto randomGradients = getAllRandomGradients(context.rng);
     int colourBarHeight = (int)randomGradients.size();
     int colourBarLen = GRADIENT_LENGTH * COLOUR_BAR_WIDTH;
 
+    // Center the whole animation horizontally around the sum of ascii art width
+    // and info width
+    int totalWidth = artWidth + infoWidth + 4;  // 4 is the gap
+    int leftPad = (winWidth - totalWidth) / 2;
+    if (leftPad < 0)
+        leftPad = 0;
+    int artColX = leftPad;
+    int infoColX = artColX + artWidth + 4;
+
     int infoAndBarHeight = infoHeight + colourBarHeight + 1;
     int blockHeight = std::max(artHeight, infoAndBarHeight);
     int blockTopPad = (winHeight - blockHeight) / 2;
-
-    int artColX = (winWidth - (artWidth + infoWidth + 4)) / 2;
-    if (artColX < 0)
-        artColX = 0;
-    int infoColX = artColX + artWidth + 4;
-
     int artTopPad = blockTopPad + (blockHeight - artHeight) / 2;
     int infoTopPad = blockTopPad + (blockHeight - infoAndBarHeight) / 2;
 
@@ -266,9 +294,11 @@ void Neofetch::drawFrame(const AnimationContext& context) {
     int gradX = infoColX;
     for (int col = 0; col < colourBarLen; ++col) {
         for (size_t g = 0; g < randomGradients.size(); ++g) {
-            int gradIdx = col / COLOUR_BAR_WIDTH;
+            int gradIdx = (GRADIENT_LENGTH > 0)
+                              ? (col * GRADIENT_LENGTH) / colourBarLen
+                              : 0;
             if (gradIdx >= GRADIENT_LENGTH)
-                continue;
+                gradIdx = GRADIENT_LENGTH - 1;
             int colourPair = getInverseColourIndex(randomGradients[g], gradIdx);
             wattron(context.window, COLOR_PAIR(colourPair));
             mvwaddch(context.window, gradY + g, gradX + col, ' ');
@@ -284,9 +314,6 @@ void Neofetch::drawFrame(const AnimationContext& context) {
     // Fade out gradient bars
     for (int col = 0; col < colourBarLen; ++col) {
         for (size_t g = 0; g < randomGradients.size(); ++g) {
-            int gradIdx = col / COLOUR_BAR_WIDTH;
-            if (gradIdx >= GRADIENT_LENGTH)
-                continue;
             mvwaddch(context.window, gradY + g, gradX + col, ' ');
         }
         wrefresh(context.window);

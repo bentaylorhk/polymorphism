@@ -17,5 +17,4 @@ class Neofetch : public Animation {
    protected:
     void drawFrame(const AnimationContext &context) override;
     std::vector<std::string> infoLines;
-    std::string title;
 };
