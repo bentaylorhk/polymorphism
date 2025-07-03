@@ -101,9 +101,9 @@ void Boot::drawFrame(const AnimationContext &context) {
         float ease = 1.0f;
         
         if (progress < 0.4f) {
-            ease = easeInQuad(progress / 0.3f);
+            ease = easeInQuad(progress / 0.4f);
         } else if (progress > 0.6f) {
-            ease = 1.0f - easeOutQuad((progress - 0.7f) / 0.3f);
+            ease = 1.0f - easeOutQuad((progress - 0.6f) / 0.4f);
         }
         
         werase(context.window);
@@ -128,7 +128,7 @@ void Boot::drawFrame(const AnimationContext &context) {
                 norm *= ease;
                 
                 // Allow the normalized value to exceed 1 by multiplying by 2
-                norm *= 1.1f;
+                norm *= 1.3f;
                 
                 // Calculate current wave character index (scaled to max)
                 int waveIdx = static_cast<int>(norm * (bootChars.size() - 1));
