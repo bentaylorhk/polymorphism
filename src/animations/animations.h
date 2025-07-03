@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "../util/common.h"
+#include "boot.h"
 #include "char_fill.h"
 #include "code_scroll.h"
 #include "colour_preview.h"
@@ -29,6 +30,11 @@
 #include "verbs.h"
 #include "vertical_wipe.h"
 
+#if IS_BOOT_ANIMATION
+const std::vector<std::shared_ptr<Animation>> allAnimations = {
+    std::make_shared<Boot>(),
+};
+#elif IS_SCREENSAVER
 const std::vector<std::shared_ptr<Animation>> allAnimations = {
     std::make_shared<CodeScroll>(),      std::make_shared<Lissajous>(),
     std::make_shared<SingleCascade>(),   std::make_shared<DVD>(),
@@ -40,6 +46,19 @@ const std::vector<std::shared_ptr<Animation>> allAnimations = {
     std::make_shared<ColourPreview>(),   std::make_shared<Static>(),
     std::make_shared<Neofetch>(),
 };
+#elif IS_POLYMORPHISM
+const std::vector<std::shared_ptr<Animation>> allAnimations = {
+    std::make_shared<CodeScroll>(),      std::make_shared<Lissajous>(),
+    std::make_shared<SingleCascade>(),   std::make_shared<DVD>(),
+    std::make_shared<CharFill>(),        std::make_shared<DiagonalFillWipe>(),
+    std::make_shared<SineWaves>(),       std::make_shared<FuzzOut>(),
+    std::make_shared<VerticalWipe>(),    std::make_shared<HypnoticWaves>(),
+    std::make_shared<ColouredCascade>(), std::make_shared<LineWipe>(),
+    std::make_shared<MovingWipe>(),      std::make_shared<Verbs>(),
+    std::make_shared<ColourPreview>(),   std::make_shared<Static>(),
+    std::make_shared<Neofetch>(),
+};
+#endif
 
 std::map<TransitionState, std::vector<std::shared_ptr<Animation>>>
 getAnimationsByStartState() {

@@ -169,7 +169,15 @@ int main(int argc, char *argv[]) {
 
         animation->run(context);
     } else {
+#if IS_BOOT_ANIMATION
+        // For boot animation, just play the boot animation once and exit
+        std::shared_ptr<Animation> bootAnimation = findAnimationByName("boot");
+        if (bootAnimation) {
+            bootAnimation->run(context);
+        }
+#else
         loop(context);
+#endif
     }
 
     curs_set(TRUE);
