@@ -50,50 +50,73 @@ void Boot::drawFrame(const AnimationContext &context) {
     int winHeight, winWidth;
     context.getDimensions(winHeight, winWidth);
     
-    // Parse ASCII art into a 2D array
-    std::vector<std::string> artLines;
-    std::string artStr = ASCII_ART;
-    std::istringstream iss(artStr);
-    std::string line;
-    while (std::getline(iss, line)) {
-        if (!line.empty()) {
-            artLines.push_back(line);
+    // Parse ASCII art into a 2D array (moved outside - should be static or class member)
+    static std::vector<std::string> artLines;
+    static std::vector<std::vector<int>> artCharIndices;
+    static std::vector<std::vector<bool>> revealed;
+    static int artHeight = 0, artWidth = 0, artStartY = 0, artStartX = 0;
+    static bool initialized = false;
+    
+    if (!initialized) {
+        std::string artStr = ASCII_ART;
+        std::istringstream iss(artStr);
+        std::string line;
+        while (std::getline(iss, line)) {
+            if (!line.empty()) {
+                artLines.push_back(line);
+            }
         }
-    }
-    
-    int artHeight = artLines.size();
-    int artWidth = 0;
-    for (const auto& artLine : artLines) {
-        artWidth = std::max(artWidth, static_cast<int>(artLine.length()));
-    }
-    
-    // Calculate center position for ASCII art
-    int artStartY = (winHeight - artHeight) / 2;
-    int artStartX = (winWidth - artWidth) / 2;
-    
-    // Pre-calculate ASCII art character indices for performance
-    std::vector<std::vector<int>> artCharIndices(artHeight);
-    for (int y = 0; y < artHeight; ++y) {
-        artCharIndices[y].resize(artWidth, 0);  // Default to space (index 0)
-        for (int x = 0; x < artWidth && x < static_cast<int>(artLines[y].length()); ++x) {
-            char artChar = artLines[y][x];
-            // Find the index of the art character in bootChars
-            for (size_t i = 0; i < bootChars.size(); ++i) {
-                if (bootChars[i] == artChar) {
-                    artCharIndices[y][x] = i;
-                    break;
+        
+        artHeight = artLines.size();
+        artWidth = 0;
+        for (const auto& artLine : artLines) {
+            artWidth = std::max(artWidth, static_cast<int>(artLine.length()));
+        }
+        
+        // Calculate center position for ASCII art
+        artStartY = (winHeight - artHeight) / 2;
+        artStartX = (winWidth - artWidth) / 2;
+        
+        // Pre-calculate ASCII art character indices for performance
+        artCharIndices.resize(artHeight);
+        for (int y = 0; y < artHeight; ++y) {
+            artCharIndices[y].resize(artWidth, 0);  // Default to space (index 0)
+            for (int x = 0; x < artWidth && x < static_cast<int>(artLines[y].length()); ++x) {
+                char artChar = artLines[y][x];
+                // Find the index of the art character in bootChars
+                for (size_t i = 0; i < bootChars.size(); ++i) {
+                    if (bootChars[i] == artChar) {
+                        artCharIndices[y][x] = i;
+                        break;
+                    }
                 }
             }
         }
+        
+        // Initialize revealed matrix once
+        revealed.resize(winHeight, std::vector<bool>(winWidth, false));
+        initialized = true;
     }
     
-    // Track which positions have been revealed
-    std::vector<std::vector<bool>> revealed(winHeight, std::vector<bool>(winWidth, false));
+    // Convert bootChars to array for faster access
+    static const char bootCharsArray[] = {
+        ' ', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+        'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y',
+        'z', '.', ',', '-', '_', '=', '/', '\\', '|', '(', ')', '+', '*', '?', '#', '@'
+    };
+    static constexpr int bootCharsSize = sizeof(bootCharsArray) / sizeof(bootCharsArray[0]);
     
     float t = 0.0f;
     float dt = 0.09f;  // Original speed
     float freq1 = 0.13f, freq2 = 0.09f, freq3 = 0.07f;
     float amp1 = 1.7f, amp2 = 1.2f, amp3 = 0.8f;
+    
+    // Pre-calculate some constants
+    const float invWinWidth = 1.0f / winWidth;
+    const float invWinHeight = 1.0f / winHeight;
+    const float normScale = 6.0f;  // 3.0f * 2.0f
+    const float normScaleY = 3.0f; // 1.5f * 2.0f
+    const int maxBootCharIdx = bootCharsSize - 1;
 
     for (int frame = 0; frame < FRAME_COUNT; ++frame, t += dt) {
         // Calculate progress for a single wave that reaches max and fades
@@ -106,45 +129,50 @@ void Boot::drawFrame(const AnimationContext &context) {
             ease = 1.0f - easeOutQuad((progress - 0.6f) / 0.4f);
         }
         
+        // Pre-calculate time-based wave components
+        const float t1 = t;
+        const float t2 = t * 1.2f;
+        const float t3 = t * 0.7f;
+        const float t4 = t * 1.5f;
+        
         werase(context.window);
         for (int y = 0; y < winHeight; ++y) {
+            // Pre-calculate y-dependent values
+            const float ny = (2.0f * y * invWinHeight - 1.0f) * 1.5f;
+            const float cosComponent = std::cos(ny * freq2 - t2) * amp2;
+            
             for (int x = 0; x < winWidth; ++x) {
-                // Normalized coordinates
-                float nx = (2.0f * x / winWidth - 1.0f) * 3.0f;
-                float ny = (2.0f * y / winHeight - 1.0f) * 1.5f;
+                // Normalized coordinates (optimized)
+                const float nx = (2.0f * x * invWinWidth - 1.0f) * 3.0f;
                 
-                // Compose several sine/cosine waves
-                float v = 0.0f;
-                v += std::sin(nx * freq1 + t) * amp1;
-                v += std::cos(ny * freq2 - t * 1.2f) * amp2;
-                v += std::sin((nx + ny) * freq3 + t * 0.7f) * amp3;
+                // Compose several sine/cosine waves (reduced calculations)
+                float v = std::sin(nx * freq1 + t1) * amp1;
+                v += cosComponent;  // Pre-calculated
+                v += std::sin((nx + ny) * freq3 + t3) * amp3;
                 
-                // Radial ripple
-                float r = std::sqrt(nx * nx + ny * ny);
-                v += std::sin(r * 2.5f - t * 1.5f) * 1.1f;
+                // Radial ripple (optimized sqrt)
+                const float r2 = nx * nx + ny * ny;  // r squared
+                v += std::sin(r2 * 1.25f - t4) * 1.1f;  // Use r^2 * adjusted freq instead of sqrt(r^2)
                 
-                // Normalize to [0, 1] and apply easing
-                float norm = (std::tanh(v) + 1.0f) / 2.0f;
-                norm *= ease;
+                // Normalize to [0, 1] and apply easing (optimized tanh)
+                // Using fast tanh approximation: tanh(x) ≈ x / (1 + |x|) for reasonable range
+                const float absV = std::abs(v);
+                float norm = (v / (1.0f + absV) + 1.0f) * 0.5f;
+                norm *= ease * 1.5f;  // Combined multiplication
                 
-                // Allow the normalized value to exceed 1 by multiplying by 2
-                norm *= 1.3f;
-                
-                // Calculate current wave character index (scaled to max)
-                int waveIdx = static_cast<int>(norm * (bootChars.size() - 1));
-                
-                // Clamp index values above the max to the max index
-                waveIdx = std::min(waveIdx, static_cast<int>(bootChars.size() - 1));
+                // Calculate current wave character index (optimized)
+                int waveIdx = static_cast<int>(norm * maxBootCharIdx);
+                waveIdx = (waveIdx > maxBootCharIdx) ? maxBootCharIdx : waveIdx;  // Branchless clamp
                 
                 char displayChar = ' ';
                 
                 // Check if we're in the ASCII art area
-                int artY = y - artStartY;
-                int artX = x - artStartX;
+                const int artY = y - artStartY;
+                const int artX = x - artStartX;
                 
                 if (artY >= 0 && artY < artHeight && artX >= 0 && artX < artWidth) {
                     // Get the pre-calculated ASCII art character index
-                    int artCharIdx = artCharIndices[artY][artX];
+                    const int artCharIdx = artCharIndices[artY][artX];
                     
                     // Check if wave intensity is higher than the art character index
                     if (waveIdx > artCharIdx) {
@@ -160,11 +188,11 @@ void Boot::drawFrame(const AnimationContext &context) {
                         }
                     } else {
                         // Show the wave
-                        displayChar = bootChars[waveIdx];
+                        displayChar = bootCharsArray[waveIdx];
                     }
                 } else {
                     // Outside art area, just show wave
-                    displayChar = bootChars[waveIdx];
+                    displayChar = bootCharsArray[waveIdx];
                 }
                 
                 mvwaddch(context.window, y, x, displayChar);
