@@ -36,8 +36,7 @@ void CodeScroll::drawFrame(const AnimationContext& context) {
     auto files = findFiles(context.sourceDir);
 
     // Only keep the specific files
-    const std::vector<std::string> allowed = {"common.h", "common.cpp",
-                                              "main.cpp", "code_scroll.cpp"};
+    const std::vector<std::string> allowed = {"main.cpp", "code_scroll.cpp"};
     files.erase(
         std::remove_if(files.begin(), files.end(),
                        [&](const std::string& path) {
@@ -57,6 +56,8 @@ void CodeScroll::drawFrame(const AnimationContext& context) {
 
     int lastLine = rows - 1;
 
+    int edgePad = 1;
+
     Gradient gradient = getRandomGradient(context.rng);
     int colourIndex = getColourIndex(gradient, 0);
 
@@ -65,7 +66,7 @@ void CodeScroll::drawFrame(const AnimationContext& context) {
 
         // Truncate to window width to disable wrapping, -1 to stop jittering
         // for large text
-        std::string displayText = text.substr(0, cols - 1);
+        std::string displayText = text.substr(0, cols - (edgePad * 2));
 
         // Case-insensitive search for "polyphonic"
         std::string lowerText = toLower(displayText);
@@ -74,7 +75,8 @@ void CodeScroll::drawFrame(const AnimationContext& context) {
 
         if (pos != std::string::npos) {
             // Print up to the match
-            mvwaddnstr(context.window, lastLine, 0, displayText.c_str(), pos);
+            mvwaddnstr(context.window, lastLine, edgePad, displayText.c_str(),
+                       pos);
 
             // Highlight "polyphonic"
             wattron(context.window, COLOR_PAIR(2) | A_BOLD);
@@ -90,7 +92,7 @@ void CodeScroll::drawFrame(const AnimationContext& context) {
                            displayText.size() - afterPos);
             }
         } else {
-            mvwaddnstr(context.window, lastLine, 0, displayText.c_str(),
+            mvwaddnstr(context.window, lastLine, edgePad, displayText.c_str(),
                        displayText.size());
         }
 

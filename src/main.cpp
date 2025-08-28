@@ -94,7 +94,7 @@ int main(int argc, char *argv[]) {
     app.add_option("--animation", animationName,
                    "Play a specific animation by name");
 
-    std::string sourceDir = "/home/ben/repos/polyphonic-rsvp/src";
+    std::string sourceDir = "/home/ben/repos/polymorphism/src";
     app.add_option("--source-dir", sourceDir,
                    "The source directory for the project files")
         ->default_val(sourceDir)
