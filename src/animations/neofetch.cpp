@@ -35,10 +35,24 @@ MM.      ,MP.     `MM
 
 Neofetch::Neofetch()
     : Animation(TransitionState::Blank, TransitionState::Anything) {
+    infoLines = {"ben @ polyphonic-1",
+                 "==================",
+                 "OS - polyOS",
+                 "Kernel - 6.15.9-arch1-1",
+                 "Shell - /bin/bash 5.3.3(1)",
+                 "Display - Sony PVM-14L5",
+                 "Resolution - 320x240 @ 60.08Hz",
+                 "Terminal - alacritty",
+                 "Font - scientifica",
+                 "CPU - AMD Ryzen 5 8500G @ 5GHz",
+                 "GPU - AMD Radeon HD 8490",
+                 "Memory - 14.71GiB"};
+    return;
     char* user = getenv("USER");
     std::string username = user ? user : "?";
 
     char hostname[256] = "";
+    // TODO: error check
     gethostname(hostname, sizeof(hostname));
     std::string hostStr = hostname;
 
@@ -220,7 +234,7 @@ void Neofetch::drawFrame(const AnimationContext& context) {
         }
     }
 
-    constexpr int COLOUR_BAR_WIDTH = 7;
+    constexpr int COLOUR_BAR_WIDTH = 6;
     auto randomGradients = getAllRandomGradients(context.rng);
     int colourBarHeight = (int)randomGradients.size();
     int colourBarLen = GRADIENT_LENGTH * COLOUR_BAR_WIDTH;
@@ -228,30 +242,19 @@ void Neofetch::drawFrame(const AnimationContext& context) {
     // Center the whole animation horizontally around the sum of ascii art width
     // and info width
     int totalWidth = artWidth + infoWidth + 4;  // 4 is the gap
-    int leftPad = (winWidth - totalWidth) / 2;
-    if (leftPad < 0)
-        leftPad = 0;
+    // int leftPad = (winWidth - totalWidth) / 2;
+    // if (leftPad < 0)
+    //     leftPad = 0;
+    int leftPad = 2;
     int artColX = leftPad;
-    int infoColX = artColX + artWidth + 4;
+    // int infoColX = artColX + artWidth + 4;
+    int infoColX = artColX + artWidth + 3;
 
     int infoAndBarHeight = infoHeight + colourBarHeight + 1;
     int blockHeight = std::max(artHeight, infoAndBarHeight);
     int blockTopPad = (winHeight - blockHeight) / 2;
     int artTopPad = blockTopPad + (blockHeight - artHeight) / 2;
     int infoTopPad = blockTopPad + (blockHeight - infoAndBarHeight) / 2;
-
-    // Print ASCII art
-    for (size_t i = 0; i < artLines.size() && (artTopPad + (int)i) < winHeight;
-         ++i) {
-        mvwprintw(context.window, artTopPad + i, artColX, "%s",
-                  artLines[i].c_str());
-    }
-    // Print info text
-    for (size_t i = 0;
-         i < infoLines.size() && (infoTopPad + (int)i) < winHeight; ++i) {
-        mvwprintw(context.window, infoTopPad + i, infoColX, "%s",
-                  infoLines[i].c_str());
-    }
 
     // Fade in ASCII art
     int fadeFrames = 12;
@@ -309,7 +312,7 @@ void Neofetch::drawFrame(const AnimationContext& context) {
             std::chrono::milliseconds(MS_PER_THIRTY_SECOND_BEAT));
     }
     std::this_thread::sleep_for(
-        std::chrono::milliseconds(MS_PER_QUADRUPLE_BEAT));
+        std::chrono::milliseconds(MS_PER_QUADRUPLE_BEAT * 60));
 
     // Fade out gradient bars
     for (int col = 0; col < colourBarLen; ++col) {
