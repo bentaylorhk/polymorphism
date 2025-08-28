@@ -72,7 +72,7 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
         }
     };
 
-    int yStart = GAP;
+    int yStart = 0;
     bool leftToRight = true;
     for (int idx = 0; idx < numSections; ++idx) {
         int ySectionStart = yStart;
@@ -108,7 +108,7 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
         } else {
             intensity = 1.0f;
         }
-        yStart = GAP;
+        yStart = 0;
         for (int idx = 0; idx < numSections; ++idx) {
             int ySectionStart = yStart;
             int ySectionEnd = yStart + SECTION_HEIGHT;
@@ -150,7 +150,7 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
     int downFrames = 40;
     for (int frame = 0; frame <= downFrames; ++frame) {
         float intensity = 1.0f - easeInOutQuad((float)frame / downFrames);
-        yStart = GAP;
+        yStart = 0;
         for (int idx = 0; idx < numSections; ++idx) {
             int ySectionStart = yStart;
             int ySectionEnd = yStart + SECTION_HEIGHT;
