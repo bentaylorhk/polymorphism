@@ -33,7 +33,8 @@ void ColourPreview::drawFrame(const AnimationContext &context) {
     std::vector<Gradient> gradients = getAllRandomGradients(context.rng);
 
     // Lambda to fill a section with animated chars
-    int fillSectionWait = MS_PER_DOUBLE_BEAT / winWidth;
+    int fillSectionWait = MS_PER_SIXTY_FOURTH_BEAT;
+    // int fillSectionWait = MS_PER_DOUBLE_BEAT / winWidth;
     auto fillSection = [&](int ySectionStart, int ySectionEnd,
                            Gradient gradient, bool ltr, char fillChar) {
         for (int step = 0; step < winWidth; ++step) {
