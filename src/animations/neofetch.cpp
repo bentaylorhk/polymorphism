@@ -312,7 +312,7 @@ void Neofetch::drawFrame(const AnimationContext& context) {
             std::chrono::milliseconds(MS_PER_THIRTY_SECOND_BEAT));
     }
     std::this_thread::sleep_for(
-        std::chrono::milliseconds(MS_PER_QUADRUPLE_BEAT * 60));
+        std::chrono::milliseconds(MS_PER_QUADRUPLE_BEAT));
 
     // Fade out gradient bars
     for (int col = 0; col < colourBarLen; ++col) {
