@@ -1,25 +1,21 @@
 
 
-
-
-                                             ,,
-                                           `7MM
-                                             MM
-                        `7MMpdMAo.  ,pW"Wq.  MM `7M'   `MF'
-                          MM   `Wb 6W'   `Wb MM   VA   ,V
-                          MM    M8 8M     M8 MM    VA ,V
-                          MM   ,AP YA.   ,A9 MM     VVV
-                          MMbmmd'   `Ybmd9'.JMML.   ,V
-              ,,          MM                 ,,    ,V
-            `7MM        .JMML.               db OOb" 
-              MM
-   `7MMpdMAo. MMpMMMb.  ,pW"Wq.`7MMpMMMb.  `7MM  ,p6"bo
-     MM   `Wb MM    MM 6W'   `Wb MM    MM    MM 6M'  OO
-     MM    M8 MM    MM 8M     M8 MM    MM    MM 8M
-     MM   ,AP MM    MM YA.   ,A9 MM    MM    MM YM.    ,
-     MMbmmd'.JMML  JMML.`Ybmd9'.JMML  JMML..JMML.YMbmd'
-     MM
-   .JMML.
-
-
+  ______.       ._.    ______     ______  ____ ______.    ______ ______    ._.    _____  _____ ______    ._.
+    MM   Mb   df   lb    MM         Ql     |     MM   Mb    MM     MM    df   lb    MlQ    M     MM    df   lb
+    MM   MM   MM   MM    MM         lQ     |     MM   MM    MM     MM    MM   MM    M`Q.   M     MM    MM   Mm
+    MM   MM   MM   MM    MM         `Ql   ,'     MM   MM    MM     MM    MM   MM    M QQ   M     MM    MM   MM
+    MM   MM   MM   MM    MM          Ql   |      MM   MM    MM     MM    MM   MM    M lQ   M     MM    MM   MM
+    MM   MM   MM   MM    MM          lQ   |      MM   MM    MM     MM    MM   MM    M `Ql  M     MM    MM   MM
+    MM   MM   MM   MM    MM           Ql ,'      MM   MM    MM     MM    MM   MM    M  lQ  M     MM    MM
+    MM   MM   MM   MM    MM           QQ |       MM   MM    MM     MM    MM   MM    M  `Q. M     MM    MM
+    MM__,MP   MM   MM    MM           `Q,'       MM__,MP    MM-----MM    MM   MM    M   Ql M     MM    MM
+    MM        MM   MM    MM            MM        MM         MM     MM    MM   MM    M   lQ M     MM    MM
+    MM        MM   MM    MM            MM        MM         MM     MM    MM   MM    M   `Q M     MM    MM
+    MM        MM   MM    MM            MM        MM         MM     MM    MM   MM    M    QlM     MM    MM   
+    MM        MM   MM    MM            MM        MM         MM     MM    MM   MM    M    lQM     MM    MM   MM
+    MM        MM   MM    MM     |      MM        MM         MM     MM    MM   MM    M     QM     MM    MM   MM
+    MM        MM   MM    MM     |      MM        MM         MM     MM    MM   MM    M     lM     MM    MM   MM
+    MM        jM   MQ    MM     |      MM        MM         MM     MM    jM   MQ    M     `M     MM    jM   MQ
+    MM        qM   Mp    MM    ,|      MM        MM         MM     MM    qM   Mp    M      M     MM    qM   Mp
+  __MM__       "._."   __MM__,dM|    __MM__    __MM__     __MM__ __MM__   "._."   __M__    M   __MM__   "._."
 
