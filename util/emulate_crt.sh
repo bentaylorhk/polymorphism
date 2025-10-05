@@ -4,12 +4,6 @@
 # 2025
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PARENT_DIR="$( dirname "$SCRIPT_DIR" )"
+BIN_DIR="$( dirname "$SCRIPT_DIR" )/build/bin"
 
-WIDTH=800
-HEIGHT=600
-
-ROWS=19
-COLS=55
-
-alacritty --class crt_test
+alacritty --class crt_test -e sh -c "cd $BIN_DIR; exec bash" &

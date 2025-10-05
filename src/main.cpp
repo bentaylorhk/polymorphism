@@ -105,6 +105,11 @@ int main(int argc, char *argv[]) {
                    "Word to be used and displayed in animations")
         ->default_val(word);
 
+#if IS_POLYMORPHISM
+    bool noPadding = false;
+    app.add_flag("--no-padding", noPadding, "Disable CRT overscan padding");
+#endif
+
     CLI11_PARSE(app, argc, argv);
 
     initscr();
@@ -116,21 +121,19 @@ int main(int argc, char *argv[]) {
     int max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
 
-    WINDOW *mainWindow;
-    int win_height;
-    int win_width;
+    WINDOW *mainWindow = stdscr;
+    int win_height = max_y;
+    int win_width = max_x;
 
-    // Polyphonic exhibition requires padded window for CRT overscan
 #if IS_POLYMORPHISM
-    win_height = max_y - PADDING_TOP - PADDING_BOTTOM;
-    win_width = max_x - PADDING_LEFT - PADDING_RIGHT;
+    // Polyphonic exhibition requires padded window for CRT overscan
+    if (!noPadding) {
+        win_height = max_y - PADDING_TOP - PADDING_BOTTOM;
+        win_width = max_x - PADDING_LEFT - PADDING_RIGHT;
 
-    // Create the subwindow with position and size
-    mainWindow = newwin(win_height, win_width, PADDING_TOP, PADDING_LEFT);
-#else
-    mainWindow = stdscr;
-    win_height = max_y;
-    win_width = max_x;
+        // Create the subwindow with position and size
+        mainWindow = newwin(win_height, win_width, PADDING_TOP, PADDING_LEFT);
+    }
 #endif
 
     std::random_device rd;
