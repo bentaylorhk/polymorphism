@@ -66,7 +66,7 @@ const std::vector<std::shared_ptr<Animation>> allAnimations = {
     std::make_shared<Verbs>(),
     std::make_shared<ColourPreview>(),
     std::make_shared<Static>(),
-    std::make_shared<Neofetch>(),
+    // std::make_shared<Neofetch>(),
     std::make_shared<RenaeDancers>(),
     std::make_shared<ScrollingPolyphonic>(),
 };
