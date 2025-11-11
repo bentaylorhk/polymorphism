@@ -40,7 +40,8 @@ void DVD::drawFrame(const AnimationContext &context) {
     };
     int trailLength = GRADIENT_LENGTH;
     std::vector<Poly> polys;
-    std::uniform_int_distribution<int> xDist(5, winWidth - context.wordLen() - 5);
+    std::uniform_int_distribution<int> xDist(5,
+                                             winWidth - context.wordLen() - 5);
     std::uniform_int_distribution<int> yDist(5, winHeight - 1 - 5);
     std::vector<Gradient> gradients = getAllRandomGradients(context.rng);
     for (int i = 0; i < gradients.size(); ++i) {
@@ -61,7 +62,7 @@ void DVD::drawFrame(const AnimationContext &context) {
         polyStartDelays[i] = i * 8 * 4;
     }
 
-    int steps = 600;  // total bounces
+    int steps = 600;
     for (int i = 0; i < steps; ++i) {
         werase(context.window);
         for (int pidx = 0; pidx < polys.size(); ++pidx) {

@@ -50,3 +50,5 @@ const std::vector<char> blankedIntensityChars = [] {
 }();
 
 std::vector<std::pair<int, int>> getFilledCells(WINDOW *window);
+
+std::vector<std::string> loadAsciiArt(const std::string &path);

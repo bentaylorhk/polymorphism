@@ -8,6 +8,7 @@
 #include <ncurses.h>
 
 #include <algorithm>
+#include <fstream>
 #include <sstream>
 
 void getStringDimensions(const std::string &input, int &width, int &height) {
@@ -79,4 +80,14 @@ std::vector<std::pair<int, int>> getFilledCells(WINDOW *window) {
     }
 
     return filledCells;
+}
+
+std::vector<std::string> loadAsciiArt(const std::string &path) {
+    std::vector<std::string> lines;
+    std::ifstream file(path);
+    std::string line;
+    while (std::getline(file, line)) {
+        lines.push_back(line);
+    }
+    return lines;
 }
