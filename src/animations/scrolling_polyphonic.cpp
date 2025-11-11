@@ -87,27 +87,46 @@ void ScrollingPolyphonic::drawFrame(const AnimationContext &context) {
             }
         }
         wattroff(context.window, COLOR_PAIR(colour));
-        // Easing for wave amplitude, no flat region
-        double easeNormalized = 1.0;
-        int animFrame = frame + winWidth;  // 0 to totalFrames-1
-        double t = (double)animFrame / (double)totalFrames;
-        if (t < 0.25) {
-            easeNormalized = easeInOutQuad(t / 0.25);  // 0 to 1
-        } else if (t < 0.5) {
-            easeNormalized = easeInOutQuad((0.5 - t) / 0.25);  // 1 to 0
-        } else if (t < 0.75) {
-            easeNormalized = easeInOutQuad((t - 0.5) / 0.25);  // 0 to 1
-        } else {
-            easeNormalized = easeInOutQuad((1.0 - t) / 0.25);  // 1 to 0
-        }
-        // Ensure minimum amplitude to avoid jump start due to low terminal
-        // resolution
-        double minEase = 0.28;  // floor for ease
-        double ease = minEase + (1.0 - minEase) * easeNormalized;
 
         for (int y = 0; y < renaeHeight; ++y) {
             for (int x = 0; x < renaeWidth; ++x) {
                 char c = renae.getChar(x, y);
+
+                // Calculate easing for this specific x position (right to left
+                // sweep)
+                double easeNormalized = 1.0;
+                int animFrame = frame + winWidth;  // 0 to totalFrames-1
+                double globalT = (double)animFrame / (double)totalFrames;
+
+                // Calculate position-based time offset (right side starts
+                // first)
+                double xNormalized =
+                    (double)(renaeWidth - 1 - x) / (double)(renaeWidth - 1);
+                double sweepWidth =
+                    0.1;  // How much of the animation time the sweep takes
+                double localT =
+                    (globalT - xNormalized * sweepWidth) / (1.0 - sweepWidth);
+                localT =
+                    std::max(0.0, std::min(1.0, localT));  // Clamp to [0,1]
+
+                if (localT < 0.25) {
+                    easeNormalized = easeInOutQuad(localT / 0.25);  // 0 to 1
+                } else if (localT < 0.5) {
+                    easeNormalized =
+                        easeInOutQuad((0.5 - localT) / 0.25);  // 1 to 0
+                } else if (localT < 0.75) {
+                    easeNormalized =
+                        easeInOutQuad((localT - 0.5) / 0.25);  // 0 to 1
+                } else {
+                    easeNormalized =
+                        easeInOutQuad((1.0 - localT) / 0.25);  // 1 to 0
+                }
+
+                // Ensure minimum amplitude to avoid jump start due to low
+                // terminal resolution
+                double minEase = 0.28;  // floor for ease
+                double ease = minEase + (1.0 - minEase) * easeNormalized;
+
                 // TODO: 2 or 3 or else?
                 int waveY =
                     renaeY +
@@ -123,4 +142,6 @@ void ScrollingPolyphonic::drawFrame(const AnimationContext &context) {
         std::this_thread::sleep_for(
             std::chrono::milliseconds(MS_PER_SIXTEENTH_BEAT));
     }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_DOUBLE_BEAT));
 }
