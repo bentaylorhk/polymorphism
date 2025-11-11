@@ -27,7 +27,7 @@ void ScrollingPolyphonic::drawFrame(const AnimationContext &context) {
     int artWidth = polyphonic.getWidth();
     int vertOffset = (winHeight - artHeight) / 2;
 
-    AsciiArt renae = loadAsciiArt("renae/logo.txt");
+    AsciiArt renae = loadAsciiArt("renae/padded-logo.txt");
     int renaeHeight = renae.getHeight();
     int renaeWidth = renae.getWidth();
     int renaeY = (winHeight - renaeHeight) / 2;
@@ -46,7 +46,9 @@ void ScrollingPolyphonic::drawFrame(const AnimationContext &context) {
                 int dist = static_cast<int>(std::sqrt(dx * dx + dy * dy));
                 if (dist <= radius) {
                     char c = renae.getChar(x, y);
-                    if (c != ' ') {
+                    if (c == '*') {
+                        mvwaddch(context.window, renaeY + y, renaeX + x, ' ');
+                    } else if (c != ' ') {
                         mvwaddch(context.window, renaeY + y, renaeX + x, c);
                     }
                 }
@@ -60,12 +62,12 @@ void ScrollingPolyphonic::drawFrame(const AnimationContext &context) {
     // TODO: better colour once chose, probably main colours.
     int colour = getRandomColourIndex(context.rng);
 
-    int repetitions = 16;
+    int repetitions = 12;
     int gap = 2;
     int totalArtWidth = repetitions * (artWidth + gap);
     int totalFrames = winWidth + totalArtWidth;
     // Easing parameters
-    double easeLen = 0.2;  // length of the ease in/out
+    double easeLen = 0.4;  // length of the ease in/out
     for (int frame = -winWidth; frame < totalArtWidth; ++frame) {
         werase(context.window);
         wattron(context.window, COLOR_PAIR(colour));
@@ -86,24 +88,33 @@ void ScrollingPolyphonic::drawFrame(const AnimationContext &context) {
         }
         wattroff(context.window, COLOR_PAIR(colour));
         // Easing for wave amplitude, no flat region
-        double ease = 1.0;
+        double easeNormalized = 1.0;
         int animFrame = frame + winWidth;  // 0 to totalFrames-1
         double t = (double)animFrame / (double)totalFrames;
-        if (t < easeLen) {
-            ease = easeOutQuad(t / easeLen);  // 0 to 1
-        } else if (t > 1.0 - easeLen) {
-            ease = easeOutQuad((1.0 - t) / easeLen);  // 1 to 0
+        if (t < 0.25) {
+            easeNormalized = easeInOutQuad(t / 0.25);  // 0 to 1
+        } else if (t < 0.5) {
+            easeNormalized = easeInOutQuad((0.5 - t) / 0.25);  // 1 to 0
+        } else if (t < 0.75) {
+            easeNormalized = easeInOutQuad((t - 0.5) / 0.25);  // 0 to 1
         } else {
-            ease = 1.0;
+            easeNormalized = easeInOutQuad((1.0 - t) / 0.25);  // 1 to 0
         }
+        // Ensure minimum amplitude to avoid jump start due to low terminal
+        // resolution
+        double minEase = 0.28;  // floor for ease
+        double ease = minEase + (1.0 - minEase) * easeNormalized;
+
         for (int y = 0; y < renaeHeight; ++y) {
             for (int x = 0; x < renaeWidth; ++x) {
                 char c = renae.getChar(x, y);
                 // TODO: 2 or 3 or else?
                 int waveY =
                     renaeY +
-                    static_cast<int>(sin(frame * 0.15 + x * 0.3) * 2.0 * ease);
-                if (c != ' ') {
+                    static_cast<int>(sin(frame * 0.15 + x * 0.3) * 3.0 * ease);
+                if (c == '*') {
+                    mvwaddch(context.window, waveY + y, renaeX + x, ' ');
+                } else if (c != ' ') {
                     mvwaddch(context.window, waveY + y, renaeX + x, c);
                 }
             }
