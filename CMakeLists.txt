@@ -18,4 +18,6 @@ set(CMAKE_COMPILER_WARNING_AS_ERROR ON)
 
 find_package(CLI11 REQUIRED)
 
+add_compile_definitions(ASCII_ART_DIR="${CMAKE_SOURCE_DIR}/ascii-art/")
+
 add_subdirectory(src)

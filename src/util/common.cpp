@@ -11,38 +11,6 @@
 #include <fstream>
 #include <sstream>
 
-void getStringDimensions(const std::string &input, int &width, int &height) {
-    width = 0;
-    height = 0;
-
-    std::istringstream stream(input);
-    std::string line;
-    while (std::getline(stream, line)) {
-        width = std::max(width, (int)line.length());
-        height++;
-    }
-}
-
-AsciiArt stringTo2DArray(const std::string &input, int width, int height) {
-    AsciiArt art;
-    art.assign(height, std::vector<char>(width, ' '));
-
-    int row = 0, col = 0;
-    for (char c : input) {
-        if (c == '\n') {
-            row++;
-            col = 0;
-            if (row >= height) {
-                break;
-            }
-        } else {
-            art[row][col++] = c;
-        }
-    }
-
-    return art;
-}
-
 double easeInOutQuad(double t) {
     return t < 0.5 ? 2 * t * t : t * (4 - 2 * t) - 1;
 }
@@ -82,12 +50,17 @@ std::vector<std::pair<int, int>> getFilledCells(WINDOW *window) {
     return filledCells;
 }
 
-std::vector<std::string> loadAsciiArt(const std::string &path) {
-    std::vector<std::string> lines;
-    std::ifstream file(path);
-    std::string line;
-    while (std::getline(file, line)) {
-        lines.push_back(line);
+AsciiArt loadAsciiArt(const std::string &path) {
+    std::string fileContent;
+    std::string fullPath = std::string(ASCII_ART_DIR) + path;
+    std::ifstream file(fullPath);
+
+    if (file) {
+        fileContent.assign((std::istreambuf_iterator<char>(file)),
+                           (std::istreambuf_iterator<char>()));
+    } else {
+        throw std::runtime_error("Failed to open ASCII art file: " + fullPath);
     }
-    return lines;
+
+    return AsciiArt(fileContent);
 }

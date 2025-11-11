@@ -24,13 +24,10 @@ void RenaeDancers::drawFrame(const AnimationContext &context) {
     werase(context.window);
 
     // Load dancers
-    static std::vector<std::string> dancer1 =
-        loadAsciiArt("ascii-art/renae/dancer1.txt");
-    static std::vector<std::string> dancer2 =
-        loadAsciiArt("ascii-art/renae/dancer2.txt");
-    static std::vector<std::string> dancer3 =
-        loadAsciiArt("ascii-art/renae/dancer3.txt");
-    std::vector<std::vector<std::string>> dancers = {dancer1, dancer2, dancer3};
+    AsciiArt dancer1 = loadAsciiArt("renae/dancer1.txt");
+    AsciiArt dancer2 = loadAsciiArt("renae/dancer2.txt");
+    AsciiArt dancer3 = loadAsciiArt("renae/dancer3.txt");
+    std::vector<AsciiArt> dancers = {dancer1, dancer2, dancer3};
 
     Gradient gradient = getRandomGradient(context.rng);
 
@@ -42,11 +39,8 @@ void RenaeDancers::drawFrame(const AnimationContext &context) {
     // Calculate each dancer's width and height
     std::vector<int> dancerWidths, dancerHeights;
     for (const auto &d : dancers) {
-        int w = 0;
-        for (const auto &l : d)
-            w = std::max(w, (int)l.size());
-        dancerWidths.push_back(w);
-        dancerHeights.push_back(d.size());
+        dancerWidths.push_back(d.getWidth());
+        dancerHeights.push_back(d.getHeight());
     }
 
     // Each dancer has its own direction, speed, and vertical center
@@ -82,6 +76,25 @@ void RenaeDancers::drawFrame(const AnimationContext &context) {
     // modulo screen size plus dancer width).
     //}
 
+    // Create a pad for each dancer
+    std::vector<WINDOW *> dancerPads;
+    for (size_t i = 0; i < dancers.size(); ++i) {
+        WINDOW *pad = newpad(dancerHeights[i], dancerWidths[i]);
+        for (int y = 0; y < dancerHeights[i]; ++y) {
+            for (int x = 0; x < dancerWidths[i]; ++x) {
+                char c = dancers[i].getChar(x, y);
+                if (c != ' ') {
+                    wattron(pad, COLOR_PAIR(dancerColors[i]));
+                    mvwaddch(pad, y, x, c);
+                    wattroff(pad, COLOR_PAIR(dancerColors[i]));
+                } else {
+                    mvwaddch(pad, y, x, ' ');
+                }
+            }
+        }
+        dancerPads.push_back(pad);
+    }
+
     int steps = 600;
     for (int frame = 0; frame < steps; ++frame) {
         werase(context.window);
@@ -90,26 +103,31 @@ void RenaeDancers::drawFrame(const AnimationContext &context) {
             positions[i] += speeds[i] * directions[i];
             int x = (int)positions[i];
             int y = dancerTops[i];
-            wattron(context.window, COLOR_PAIR(dancerColors[i]));
-            for (size_t j = 0; j < dancers[i].size(); ++j) {
-                int drawX = x;
-                if (drawX < 0)
-                    drawX = 0;
-                if (drawX < winWidth && y + (int)j < winHeight &&
-                    drawX < winWidth) {
-                    std::string line = dancers[i][j];
-                    if (drawX + (int)line.size() > winWidth) {
-                        line = line.substr(0, winWidth - drawX);
-                    }
-                    if (drawX < winWidth && !line.empty())
-                        mvwprintw(context.window, y + j, drawX, "%s",
-                                  line.c_str());
-                }
+            int padX = 0;
+            int padWidth = dancerWidths[i];
+            int screenX = x;
+            // Clip if offscreen
+            if (screenX < 0) {
+                padX = -screenX;
+                padWidth -= padX;
+                screenX = 0;
             }
-            wattroff(context.window, COLOR_PAIR(dancerColors[i]));
+            if (screenX + padWidth > winWidth) {
+                padWidth = winWidth - screenX;
+            }
+            if (padWidth > 0 && screenX < winWidth && y >= 0 && y < winHeight) {
+                prefresh(dancerPads[i], 0, padX,  // pad y, pad x
+                         y, screenX,              // screen y, screen x
+                         y + dancerHeights[i] - 1,
+                         screenX + padWidth - 1  // screen y2, screen x2
+                );
+            }
         }
         wrefresh(context.window);
         std::this_thread::sleep_for(
             std::chrono::milliseconds(MS_PER_EIGHTH_BEAT));
+    }
+    for (auto pad : dancerPads) {
+        delwin(pad);
     }
 }

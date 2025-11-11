@@ -7,6 +7,7 @@
 
 #include <ncurses.h>
 
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -26,11 +27,72 @@ constexpr int MS_PER_TRIPLE_BEAT = MS_PER_BEAT * 3;     // 1.5 sec
 constexpr int MS_PER_QUADRUPLE_BEAT = MS_PER_BEAT * 4;  // 2 sec
 constexpr int MS_PER_OCTUPLE_BEAT = MS_PER_BEAT * 8;    // 4 sec
 
-using AsciiArt = std::vector<std::vector<char>>;
+class AsciiArt {
+   public:
+    AsciiArt(const std::vector<std::vector<char>> &input) {
+        width = 0;
+        for (const auto &row : input) {
+            width = std::max(width, (int)row.size());
+        }
+        height = input.size();
 
-void getStringDimensions(const std::string &input, int &width, int &height);
+        text.assign(height, std::vector<char>(width, ' '));
 
-AsciiArt stringTo2DArray(const std::string &input, int width, int height);
+        for (int y = 0; y < input.size(); ++y) {
+            for (int x = 0; x < input[y].size(); ++x) {
+                if (x < input[y].size()) {
+                    text[y][x] = input[y][x];
+                }
+            }
+        }
+    }
+
+    AsciiArt(const std::string &input) {
+        width = 0;
+        height = 0;
+
+        std::istringstream stream(input);
+        std::string line;
+        while (std::getline(stream, line)) {
+            width = std::max(width, (int)line.length());
+            height++;
+        }
+
+        text.assign(height, std::vector<char>(width, ' '));
+
+        int row = 0, col = 0;
+        for (char c : input) {
+            if (c == '\n') {
+                row++;
+                col = 0;
+                if (row >= height) {
+                    break;
+                }
+            } else {
+                text[row][col++] = c;
+            }
+        }
+    }
+
+    char getChar(int x, int y) const {
+        if (x < 0 || x >= width || y < 0 || y >= height) {
+            throw std::out_of_range("AsciiArt::getChar: Index out of range");
+        }
+        return text[y][x];
+    }
+
+    int getWidth() const {
+        return width;
+    }
+    int getHeight() const {
+        return height;
+    }
+
+   private:
+    std::vector<std::vector<char>> text;
+    int width;
+    int height;
+};
 
 double easeInOutQuad(double t);
 
@@ -51,4 +113,4 @@ const std::vector<char> blankedIntensityChars = [] {
 
 std::vector<std::pair<int, int>> getFilledCells(WINDOW *window);
 
-std::vector<std::string> loadAsciiArt(const std::string &path);
+AsciiArt loadAsciiArt(const std::string &path);

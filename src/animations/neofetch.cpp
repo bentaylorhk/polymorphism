@@ -21,7 +21,7 @@
 #include "../util/colours.h"
 #include "../util/common.h"
 
-constexpr const char* ASCII_ART = R"(
+constexpr const char *ASCII_ART = R"(
     P   O   L   Y
 
   .g8""8q.   .M"""bgd
@@ -48,7 +48,7 @@ Neofetch::Neofetch()
                  "GPU - AMD Radeon HD 8490",
                  "Memory - 14.71GiB"};
     return;
-    char* user = getenv("USER");
+    char *user = getenv("USER");
     std::string username = user ? user : "?";
 
     char hostname[256] = "";
@@ -70,7 +70,7 @@ Neofetch::Neofetch()
         infoLines.push_back("Kernel - ?");
     }
 
-    FILE* fp = popen("pacman -Qq | wc -l", "r");
+    FILE *fp = popen("pacman -Qq | wc -l", "r");
     char pkgBuf[32] = "";
     int pkgCount = 0;
     if (fp && fgets(pkgBuf, sizeof(pkgBuf), fp)) {
@@ -83,7 +83,7 @@ Neofetch::Neofetch()
     std::string shell = getenv("SHELL") ? getenv("SHELL") : "?";
     std::string shellVer = "";
     if (shell.find("bash") != std::string::npos) {
-        FILE* fp2 = popen("bash --version | head -1 | awk '{print $4}'", "r");
+        FILE *fp2 = popen("bash --version | head -1 | awk '{print $4}'", "r");
         char verBuf[64] = "";
         if (fp2 && fgets(verBuf, sizeof(verBuf), fp2)) {
             shellVer = verBuf;
@@ -96,7 +96,7 @@ Neofetch::Neofetch()
                         (shellVer.empty() ? "" : (" " + shellVer)));
 
     // Number of running processes
-    FILE* fpProc = popen("ps ax | wc -l", "r");
+    FILE *fpProc = popen("ps ax | wc -l", "r");
     char procBuf[32] = "";
     int procCount = 0;
     if (fpProc && fgets(procBuf, sizeof(procBuf), fpProc)) {
@@ -106,7 +106,7 @@ Neofetch::Neofetch()
         pclose(fpProc);
     infoLines.push_back("Processes - " + std::to_string(procCount));
 
-    FILE* fpUptime = fopen("/proc/uptime", "r");
+    FILE *fpUptime = fopen("/proc/uptime", "r");
     if (fpUptime) {
         double upSeconds = 0;
         if (fscanf(fpUptime, "%lf", &upSeconds) == 1) {
@@ -128,7 +128,7 @@ Neofetch::Neofetch()
     }
 
     std::string displayInfo = "";
-    FILE* fp3 = popen("xrandr | grep '*' | head -1 | awk '{print $1}'", "r");
+    FILE *fp3 = popen("xrandr | grep '*' | head -1 | awk '{print $1}'", "r");
     char dispBuf[64] = "";
     if (fp3 && fgets(dispBuf, sizeof(dispBuf), fp3)) {
         displayInfo = dispBuf;
@@ -142,7 +142,7 @@ Neofetch::Neofetch()
     infoLines.push_back("Font - scientifica");
 
     std::string cpuName = "";
-    FILE* fp4 = fopen("/proc/cpuinfo", "r");
+    FILE *fp4 = fopen("/proc/cpuinfo", "r");
     if (fp4) {
         char line[256];
         while (fgets(line, sizeof(line), fp4)) {
@@ -168,7 +168,7 @@ Neofetch::Neofetch()
     infoLines.push_back("Cores - " + std::to_string(nproc));
 
     // IP Address
-    FILE* fpIp = popen("hostname -I | awk '{print $1}'", "r");
+    FILE *fpIp = popen("hostname -I | awk '{print $1}'", "r");
     char ipBuf[64] = "";
     std::string ipStr = "";
     if (fpIp && fgets(ipBuf, sizeof(ipBuf), fpIp)) {
@@ -181,7 +181,7 @@ Neofetch::Neofetch()
         infoLines.push_back("IP - " + ipStr);
 
     // Memory info
-    FILE* fpMem = fopen("/proc/meminfo", "r");
+    FILE *fpMem = fopen("/proc/meminfo", "r");
     if (fpMem) {
         char line[256];
         while (fgets(line, sizeof(line), fpMem)) {
@@ -204,31 +204,17 @@ Neofetch::Neofetch()
     }
 }
 
-void Neofetch::drawFrame(const AnimationContext& context) {
+void Neofetch::drawFrame(const AnimationContext &context) {
     int winHeight, winWidth;
     context.getDimensions(winHeight, winWidth);
     werase(context.window);
 
     // Split ASCII_ART into lines
-    std::vector<std::string> artLines;
-    {
-        std::istringstream artStream(ASCII_ART);
-        std::string line;
-        while (std::getline(artStream, line)) {
-            if (line.find_first_not_of(" \t\n\r") == std::string::npos) {
-                artLines.push_back("");
-            } else {
-                artLines.push_back(line);
-            }
-        }
-    }
-
-    int artWidth = 0, artHeight = 0;
-    getStringDimensions(ASCII_ART, artWidth, artHeight);
+    AsciiArt art = AsciiArt(ASCII_ART);
 
     int infoWidth = 0;
     int infoHeight = infoLines.size();
-    for (const auto& line : infoLines) {
+    for (const auto &line : infoLines) {
         if ((int)line.size() > infoWidth) {
             infoWidth = line.size();
         }
@@ -241,30 +227,34 @@ void Neofetch::drawFrame(const AnimationContext& context) {
 
     // Center the whole animation horizontally around the sum of ascii art width
     // and info width
-    int totalWidth = artWidth + infoWidth + 4;  // 4 is the gap
+    int totalWidth = art.getWidth() + infoWidth + 4;  // 4 is the gap
     // int leftPad = (winWidth - totalWidth) / 2;
     // if (leftPad < 0)
     //     leftPad = 0;
     int leftPad = 2;
     int artColX = leftPad;
     // int infoColX = artColX + artWidth + 4;
-    int infoColX = artColX + artWidth + 3;
+    int infoColX = artColX + art.getWidth() + 3;
 
     int infoAndBarHeight = infoHeight + colourBarHeight + 1;
-    int blockHeight = std::max(artHeight, infoAndBarHeight);
+    int blockHeight = std::max(art.getHeight(), infoAndBarHeight);
     int blockTopPad = (winHeight - blockHeight) / 2;
-    int artTopPad = blockTopPad + (blockHeight - artHeight) / 2;
+    int artTopPad = blockTopPad + (blockHeight - art.getHeight()) / 2;
     int infoTopPad = blockTopPad + (blockHeight - infoAndBarHeight) / 2;
 
     // Fade in ASCII art
     int fadeFrames = 12;
     for (int frame = 0; frame <= fadeFrames; ++frame) {
         float progress = (float)frame / fadeFrames;
-        int linesToShow = std::round(progress * artLines.size());
+        int linesToShow = std::round(progress * art.getHeight());
         werase(context.window);
         for (int i = 0; i < linesToShow && (artTopPad + i) < winHeight; ++i) {
-            mvwprintw(context.window, artTopPad + i, artColX, "%s",
-                      artLines[i].c_str());
+            for (int j = 0; j < art.getWidth(); ++j) {
+                char c = art.getChar(j, i);
+                if (c != ' ') {
+                    mvwaddch(context.window, artTopPad + i, artColX + j, c);
+                }
+            }
         }
         wrefresh(context.window);
         std::this_thread::sleep_for(
@@ -279,7 +269,7 @@ void Neofetch::drawFrame(const AnimationContext& context) {
          i < infoLines.size() && (infoTopPad + (int)i) < winHeight; ++i) {
         int lineY = infoTopPad + i;
         int lineX = infoX;
-        const std::string& line = infoLines[i];
+        const std::string &line = infoLines[i];
         for (size_t c = 0; c < line.size(); ++c) {
             mvwaddch(context.window, lineY, lineX + c, line[c]);
             wmove(context.window, lineY, lineX + c + 1);
