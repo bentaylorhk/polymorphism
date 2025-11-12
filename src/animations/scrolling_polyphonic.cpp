@@ -66,78 +66,82 @@ void ScrollingPolyphonic::drawFrame(const AnimationContext &context) {
     int gap = 2;
     int totalArtWidth = repetitions * (artWidth + gap);
     int totalFrames = winWidth + totalArtWidth;
-    // Easing parameters
-    double easeLen = 0.4;  // length of the ease in/out
+
+    // Pre-calculate constants for performance
+    const double frameToTotalFrames = 1.0 / totalFrames;
+    const double renaeWidthInv = 1.0 / (renaeWidth - 1);
+    const double sweepWidth = 0.1;
+    const double sweepWidthInv = 1.0 / (1.0 - sweepWidth);
+    const double minEase = 0.28;
+    const double easeRange = 1.0 - minEase;
+    const int artWidthPlusGap = artWidth + gap;
+
     for (int frame = -winWidth; frame < totalArtWidth; ++frame) {
         werase(context.window);
+
+        // Render scrolling polyphonic text
         wattron(context.window, COLOR_PAIR(colour));
-        for (int y = 0; y < artHeight && vertOffset + y < winHeight; ++y) {
+        const int maxY = std::min(artHeight, winHeight - vertOffset);
+        for (int y = 0; y < maxY; ++y) {
+            const int screenY = vertOffset + y;
             for (int x = 0; x < winWidth; ++x) {
-                int artPos = frame + x;
-                if (artPos < 0 || artPos >= totalArtWidth)
-                    continue;
-                int rep = artPos / (artWidth + gap);
-                int offset = artPos % (artWidth + gap);
-                if (offset < artWidth) {
-                    char c = polyphonic.getChar(offset, y);
-                    if (c != ' ') {
-                        mvwaddch(context.window, vertOffset + y, x, c);
+                const int artPos = frame + x;
+                if (artPos >= 0 && artPos < totalArtWidth) {
+                    const int offset = artPos % artWidthPlusGap;
+                    if (offset < artWidth) {
+                        const char c = polyphonic.getChar(offset, y);
+                        if (c != ' ') {
+                            mvwaddch(context.window, screenY, x, c);
+                        }
                     }
-                }  // else: gap, leave blank
+                }
             }
         }
         wattroff(context.window, COLOR_PAIR(colour));
 
+        // Pre-calculate frame-based values for renae animation
+        const int animFrame = frame + winWidth;
+        const double globalT = animFrame * frameToTotalFrames;
+        const double frameWave = frame * 0.15;
+
+        // Render animated renae logo
         for (int y = 0; y < renaeHeight; ++y) {
+            const int baseScreenY = renaeY + y;
             for (int x = 0; x < renaeWidth; ++x) {
-                char c = renae.getChar(x, y);
+                const char c = renae.getChar(x, y);
+                if (c == ' ')
+                    continue;  // Skip empty characters early
 
-                // Calculate easing for this specific x position (right to left
-                // sweep)
-                double easeNormalized = 1.0;
-                int animFrame = frame + winWidth;  // 0 to totalFrames-1
-                double globalT = (double)animFrame / (double)totalFrames;
-
-                // Calculate position-based time offset (right side starts
-                // first)
-                double xNormalized =
-                    (double)(renaeWidth - 1 - x) / (double)(renaeWidth - 1);
-                double sweepWidth =
-                    0.1;  // How much of the animation time the sweep takes
+                // Calculate easing with pre-computed values
+                const double xNormalized = (renaeWidth - 1 - x) * renaeWidthInv;
                 double localT =
-                    (globalT - xNormalized * sweepWidth) / (1.0 - sweepWidth);
-                localT =
-                    std::max(0.0, std::min(1.0, localT));  // Clamp to [0,1]
+                    (globalT - xNormalized * sweepWidth) * sweepWidthInv;
+                localT = std::max(0.0, std::min(1.0, localT));
 
+                double easeNormalized;
                 if (localT < 0.25) {
-                    easeNormalized = easeInOutQuad(localT / 0.25);  // 0 to 1
+                    easeNormalized = easeInOutQuad(localT * 4.0);
                 } else if (localT < 0.5) {
-                    easeNormalized =
-                        easeInOutQuad((0.5 - localT) / 0.25);  // 1 to 0
+                    easeNormalized = easeInOutQuad((0.5 - localT) * 4.0);
                 } else if (localT < 0.75) {
-                    easeNormalized =
-                        easeInOutQuad((localT - 0.5) / 0.25);  // 0 to 1
+                    easeNormalized = easeInOutQuad((localT - 0.5) * 4.0);
                 } else {
-                    easeNormalized =
-                        easeInOutQuad((1.0 - localT) / 0.25);  // 1 to 0
+                    easeNormalized = easeInOutQuad((1.0 - localT) * 4.0);
                 }
 
-                // Ensure minimum amplitude to avoid jump start due to low
-                // terminal resolution
-                double minEase = 0.28;  // floor for ease
-                double ease = minEase + (1.0 - minEase) * easeNormalized;
+                const double ease = minEase + easeRange * easeNormalized;
+                const int waveY =
+                    baseScreenY +
+                    static_cast<int>(sin(frameWave + x * 0.3) * 3.0 * ease);
 
-                // TODO: 2 or 3 or else?
-                int waveY =
-                    renaeY +
-                    static_cast<int>(sin(frame * 0.15 + x * 0.3) * 3.0 * ease);
                 if (c == '*') {
-                    mvwaddch(context.window, waveY + y, renaeX + x, ' ');
-                } else if (c != ' ') {
-                    mvwaddch(context.window, waveY + y, renaeX + x, c);
+                    mvwaddch(context.window, waveY, renaeX + x, ' ');
+                } else {
+                    mvwaddch(context.window, waveY, renaeX + x, c);
                 }
             }
         }
+
         wrefresh(context.window);
         std::this_thread::sleep_for(
             std::chrono::milliseconds(MS_PER_SIXTEENTH_BEAT));
