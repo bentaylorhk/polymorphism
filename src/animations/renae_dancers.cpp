@@ -98,8 +98,10 @@ void RenaeDancers::drawFrame(const AnimationContext &context) {
                 if (c != ' ') {
                     int screenY = startY + y;
                     int screenX =
-                        (startX + x) % winWidth;  // Wrap around horizontally
-                    if (screenY >= 0 && screenY < winHeight) {
+                        (startX + x) %
+                        (winWidth + 12);  // Wrap around with slight overhang
+                    if (screenY >= 0 && screenY < winHeight &&
+                        screenX < winWidth) {
                         mvwaddch(context.window, screenY, screenX, c);
                     }
                 }
