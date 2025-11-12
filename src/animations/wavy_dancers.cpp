@@ -113,7 +113,7 @@ void WavyDancers::drawFrame(const AnimationContext &context) {
 
     std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_BEAT));
 
-    int totalFrames = 600;
+    int totalFrames = 1500;
     for (int frame = 0; frame < totalFrames; ++frame) {
         werase(context.window);
 
@@ -139,14 +139,41 @@ void WavyDancers::drawFrame(const AnimationContext &context) {
         }
         wattroff(context.window, COLOR_PAIR(grey));
 
-        // Draw dancer on top
+        // Draw dancer with subtle wiggle and ripple effect
         wattron(context.window, COLOR_PAIR(dancerColorIndex));
+
         for (int y = 0; y < dancer.getHeight(); ++y) {
+            // Calculate ease value for 32 frame cycle per row
+            float cycleProgress = ((frame + y) % 32) /
+                                  32.0f;  // 0-1 over 32 frames, offset by row
+            float ease = 0.0f;
+
+            if (cycleProgress >
+                0.5f) {  // After first 16 frames (0.5 * 32 = 16)
+                float secondHalfProgress =
+                    (cycleProgress - 0.5f) * 2.0f;  // 0-1 over second half
+
+                if (secondHalfProgress < 0.5f) {
+                    // First 8 frames of second half: ease from 0 to 1
+                    ease = secondHalfProgress * 2.0f;
+                } else {
+                    // Last 8 frames of second half: ease from 1 to 0
+                    ease = (1.0f - secondHalfProgress) * 2.0f;
+                }
+            }
+
+            // Calculate wiggle for this row (each row has different phase)
+            float wiggleOffset =
+                sin((frame + y) * 0.5f) * 4.0f * ease;  // Apply ease
+            int wiggleX = (int)wiggleOffset;
+
             for (int x = 0; x < dancer.getWidth(); ++x) {
                 char c = dancer.getChar(x, y);
                 if (c != ' ') {
                     int screenY = dancerY + y;
-                    int screenX = dancerX + x;
+                    int screenX =
+                        dancerX + x + wiggleX;  // Apply row-specific wiggle
+
                     if (screenY >= 0 && screenY < winHeight && screenX >= 0 &&
                         screenX < winWidth) {
                         mvwaddch(context.window, screenY, screenX, c);
