@@ -31,6 +31,7 @@
 #include "static.h"
 #include "verbs.h"
 #include "vertical_wipe.h"
+#include "wavy_dancers.h"
 
 #if IS_BOOT_ANIMATION
 const std::vector<std::shared_ptr<Animation>> allAnimations = {
@@ -69,6 +70,7 @@ const std::vector<std::shared_ptr<Animation>> allAnimations = {
     // std::make_shared<Neofetch>(),
     std::make_shared<RenaeDancers>(),
     std::make_shared<ScrollingPolyphonic>(),
+    std::make_shared<WavyDancers>(),
 };
 #endif
 

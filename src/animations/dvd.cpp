@@ -40,6 +40,8 @@ void DVD::drawFrame(const AnimationContext &context) {
         dy = -dy;
     }
 
+    int grey = getGreyColourIndex();
+
     struct Poly {
         int x, y, dx, dy;
         Gradient gradient;
@@ -66,6 +68,7 @@ void DVD::drawFrame(const AnimationContext &context) {
     werase(context.window);
     int maxRadius = std::max(renaeWidth, renaeHeight);
     int renaeDrawTime = MS_PER_DOUBLE_BEAT / maxRadius;
+    wattron(context.window, COLOR_PAIR(grey));
     for (int radius = 0; radius <= maxRadius; ++radius) {
         for (int y = 0; y < renaeHeight; ++y) {
             for (int x = 0; x < renaeWidth; ++x) {
@@ -85,6 +88,7 @@ void DVD::drawFrame(const AnimationContext &context) {
         wrefresh(context.window);
         std::this_thread::sleep_for(std::chrono::milliseconds(renaeDrawTime));
     }
+    wattroff(context.window, COLOR_PAIR(grey));
 
     std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_DOUBLE_BEAT));
 
@@ -100,6 +104,7 @@ void DVD::drawFrame(const AnimationContext &context) {
         werase(context.window);
 
         // Render renae logo first (background)
+        wattron(context.window, COLOR_PAIR(grey));
         for (int y = 0; y < renaeHeight; ++y) {
             for (int x = 0; x < renaeWidth; ++x) {
                 char c = renae.getChar(x, y);
@@ -110,6 +115,7 @@ void DVD::drawFrame(const AnimationContext &context) {
                 }
             }
         }
+        wattroff(context.window, COLOR_PAIR(grey));
 
         // Render DVD polys on top
         for (int pidx = 0; pidx < polys.size(); ++pidx) {

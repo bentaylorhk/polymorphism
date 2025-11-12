@@ -31,6 +31,9 @@ void setupColours() {
                       0, gradients[i][j]);
         }
     }
+
+    // Grey is found after gradients
+    init_pair(gradients.size() * GRADIENT_LENGTH + 1, GREY, -1);
 }
 
 int getColourIndex(Gradient gradient, int index) {
@@ -43,12 +46,16 @@ int getColourIndex(Gradient gradient, int index) {
     return (gradient * GRADIENT_LENGTH) + index + 1;
 }
 
-Gradient getRandomGradient(std::mt19937& rng) {
+int getGreyColourIndex() {
+    return gradients.size() * GRADIENT_LENGTH + 1;
+}
+
+Gradient getRandomGradient(std::mt19937 &rng) {
     std::uniform_int_distribution<int> dist(0, gradients.size() - 1);
     return static_cast<Gradient>(dist(rng));
 }
 
-std::vector<Gradient> getNUniqueGradients(std::mt19937& rng, int n) {
+std::vector<Gradient> getNUniqueGradients(std::mt19937 &rng, int n) {
     if (n > (int)gradients.size()) {
         throw std::out_of_range(
             "Requested more unique gradients than available");
@@ -63,11 +70,11 @@ std::vector<Gradient> getNUniqueGradients(std::mt19937& rng, int n) {
     return result;
 }
 
-std::vector<Gradient> getAllRandomGradients(std::mt19937& rng) {
+std::vector<Gradient> getAllRandomGradients(std::mt19937 &rng) {
     return getNUniqueGradients(rng, gradients.size());
 }
 
-int getRandomColourIndex(std::mt19937& rng) {
+int getRandomColourIndex(std::mt19937 &rng) {
     std::uniform_int_distribution<int> dist(1,
                                             gradients.size() * GRADIENT_LENGTH);
     return dist(rng);

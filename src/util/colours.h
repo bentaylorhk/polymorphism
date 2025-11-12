@@ -39,11 +39,15 @@ const std::vector<std::array<int, GRADIENT_LENGTH>> gradients = {
     {52, 124, 202, 208, 221},   // Dark Red
 };
 
+const int GREY = 238;
+
 void setupColours();
 
 int getColourIndex(Gradient gradient, int index);
 
 int getInverseColourIndex(Gradient gradient, int index);
+
+int getGreyColourIndex();
 
 Gradient getRandomGradient(std::mt19937 &rng);
 
