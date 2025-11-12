@@ -39,7 +39,7 @@ const std::vector<std::array<int, GRADIENT_LENGTH>> gradients = {
     {52, 124, 202, 208, 221},   // Dark Red
 };
 
-const int GREY = 238;
+const int GREY = 234;
 
 void setupColours();
 
