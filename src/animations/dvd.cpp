@@ -19,6 +19,13 @@ void DVD::drawFrame(const AnimationContext &context) {
     int winHeight, winWidth;
     context.getDimensions(winHeight, winWidth);
 
+    // Load renae logo
+    AsciiArt renae = loadAsciiArt("renae/padded-logo.txt");
+    int renaeHeight = renae.getHeight();
+    int renaeWidth = renae.getWidth();
+    int renaeY = (winHeight - renaeHeight) / 2;  // Centered vertically
+    int renaeX = (winWidth - renaeWidth) / 2;
+
     int x = (winWidth - context.wordLen()) / 2;
     int y = winHeight / 2;
     int dx = 1;
@@ -55,6 +62,32 @@ void DVD::drawFrame(const AnimationContext &context) {
         polys.push_back(p);
     }
 
+    // Animate renae logo fizzing in before DVD starts
+    werase(context.window);
+    int maxRadius = std::max(renaeWidth, renaeHeight);
+    int renaeDrawTime = MS_PER_DOUBLE_BEAT / maxRadius;
+    for (int radius = 0; radius <= maxRadius; ++radius) {
+        for (int y = 0; y < renaeHeight; ++y) {
+            for (int x = 0; x < renaeWidth; ++x) {
+                int dx = x - renaeWidth / 2;
+                int dy = y - renaeHeight / 2;
+                int dist = static_cast<int>(std::sqrt(dx * dx + dy * dy));
+                if (dist <= radius) {
+                    char c = renae.getChar(x, y);
+                    if (c == '*') {
+                        mvwaddch(context.window, renaeY + y, renaeX + x, ' ');
+                    } else if (c != ' ') {
+                        mvwaddch(context.window, renaeY + y, renaeX + x, c);
+                    }
+                }
+            }
+        }
+        wrefresh(context.window);
+        std::this_thread::sleep_for(std::chrono::milliseconds(renaeDrawTime));
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(MS_PER_DOUBLE_BEAT));
+
     // Dynamically set start delays for each poly
     std::vector<int> polyStartDelays(polys.size());
     for (size_t i = 0; i < polys.size(); ++i) {
@@ -65,6 +98,20 @@ void DVD::drawFrame(const AnimationContext &context) {
     int steps = 600;
     for (int i = 0; i < steps; ++i) {
         werase(context.window);
+
+        // Render renae logo first (background)
+        for (int y = 0; y < renaeHeight; ++y) {
+            for (int x = 0; x < renaeWidth; ++x) {
+                char c = renae.getChar(x, y);
+                if (c == '*') {
+                    mvwaddch(context.window, renaeY + y, renaeX + x, ' ');
+                } else if (c != ' ') {
+                    mvwaddch(context.window, renaeY + y, renaeX + x, c);
+                }
+            }
+        }
+
+        // Render DVD polys on top
         for (int pidx = 0; pidx < polys.size(); ++pidx) {
             if (i < polyStartDelays[pidx])
                 continue;
